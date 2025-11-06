@@ -25,6 +25,14 @@ const GAMES = [
         url: "games/tetris-ai/index.html",
         status: "available"
     },
+    {
+        id: "undertale-boss-battle",
+        name: "Boss Battle",
+        description: "Undertale風のボス戦。FIGHT、ACT、ITEM、MERCYを駆使してボスを倒そう！矢印キーで回避、スペースキーで攻撃。",
+        icon: "❤️",
+        url: "games/undertale-boss/index.html",
+        status: "available"
+    },
 
     // ===== ここに新しいゲームを追加 =====
     // {
