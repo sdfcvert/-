@@ -1,0 +1,412 @@
+/* ===== リセットとベーススタイル ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #0a1628 0%, #1e3c72 50%, #2a5298 100%);
+    min-height: 100vh;
+    color: #ffffff;
+    overflow-x: hidden;
+}
+
+/* ===== ヘッダー ===== */
+.header {
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+}
+
+.back-button {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    padding: 10px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.back-button:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateX(-4px);
+}
+
+.game-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(45deg, #ffd700, #ffed4e, #ff9500);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+    animation: titleGlow 2s ease-in-out infinite;
+}
+
+@keyframes titleGlow {
+    0%, 100% { filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5)); }
+    50% { filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.8)); }
+}
+
+.sound-button {
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    font-size: 1.5rem;
+    padding: 10px 15px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.sound-button:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.1);
+}
+
+/* ===== ゲームコンテナ ===== */
+.game-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 40px;
+    padding: 40px 20px;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+/* ===== プレイヤーセクション ===== */
+.player-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.player-header {
+    text-align: center;
+}
+
+.player-header h2 {
+    font-size: 2rem;
+    color: #ffd700;
+    margin-bottom: 15px;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.player-stats {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.stat {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 10px 20px;
+    min-width: 100px;
+    text-align: center;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.8rem;
+    color: #b8d7ff;
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ffd700;
+}
+
+/* ===== ゲームボード ===== */
+.game-board-container {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+canvas {
+    display: block;
+    background: rgba(10, 22, 40, 0.9);
+    border: 3px solid rgba(255, 215, 0, 0.5);
+    border-radius: 8px;
+    box-shadow:
+        0 0 20px rgba(255, 215, 0, 0.3),
+        inset 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.game-over-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.game-over-overlay.show {
+    display: flex;
+}
+
+.game-over-overlay h2 {
+    font-size: 3rem;
+    color: #ff4444;
+    text-shadow: 0 0 20px rgba(255, 68, 68, 0.8);
+    margin-bottom: 20px;
+    animation: pulse 1s ease-in-out infinite;
+}
+
+.game-over-overlay p {
+    font-size: 1.5rem;
+    color: #ffd700;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* ===== Next Piece ===== */
+.next-piece-container {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+}
+
+.next-piece-container h3 {
+    color: #ffd700;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+}
+
+.next-piece-container canvas {
+    border: 2px solid rgba(255, 215, 0, 0.3);
+}
+
+/* ===== 中央コントロール ===== */
+.center-control {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding-top: 80px;
+}
+
+.controls-info {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: 25px;
+    min-width: 250px;
+}
+
+.controls-info h3 {
+    color: #ffd700;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+}
+
+.control-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.key {
+    background: rgba(255, 215, 0, 0.2);
+    color: #ffd700;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-weight: 700;
+    border: 2px solid rgba(255, 215, 0, 0.4);
+    font-size: 0.9rem;
+}
+
+.desc {
+    color: #d0e7ff;
+    font-size: 1rem;
+}
+
+/* ===== ボタン ===== */
+.start-button, .pause-button, .restart-button {
+    background: linear-gradient(135deg, #ff9500, #ffd700);
+    color: #1e3c72;
+    font-size: 1.5rem;
+    font-weight: 700;
+    padding: 20px 60px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(255, 149, 0, 0.4);
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.start-button:hover, .restart-button:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(255, 149, 0, 0.6);
+    background: linear-gradient(135deg, #ffa520, #ffe44e);
+}
+
+.pause-button {
+    background: linear-gradient(135deg, #4a90e2, #67b5ff);
+    padding: 15px 40px;
+    font-size: 1.2rem;
+}
+
+.pause-button:hover {
+    background: linear-gradient(135deg, #5a9ff2, #77c5ff);
+    transform: translateY(-2px);
+}
+
+.start-button:active, .pause-button:active, .restart-button:active {
+    transform: translateY(-2px);
+}
+
+/* ===== AI セクション ===== */
+.ai-section .player-header h2 {
+    color: #ff6b6b;
+    text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+}
+
+.ai-section canvas {
+    border-color: rgba(255, 107, 107, 0.5);
+    box-shadow:
+        0 0 20px rgba(255, 107, 107, 0.3),
+        inset 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+/* ===== パーティクルエフェクト ===== */
+#particleContainer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.particle {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: particleFloat 1s ease-out forwards;
+}
+
+@keyframes particleFloat {
+    0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-100px) scale(0);
+        opacity: 0;
+    }
+}
+
+/* ===== レスポンシブデザイン ===== */
+@media (max-width: 1400px) {
+    .game-container {
+        gap: 20px;
+    }
+
+    canvas {
+        width: 250px !important;
+        height: 500px !important;
+    }
+}
+
+@media (max-width: 1100px) {
+    .game-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .center-control {
+        order: -1;
+        padding-top: 20px;
+    }
+
+    .game-title {
+        font-size: 1.8rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    canvas {
+        width: 200px !important;
+        height: 400px !important;
+    }
+
+    .player-stats {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .controls-info {
+        min-width: 200px;
+        padding: 20px;
+    }
+
+    .start-button, .restart-button {
+        padding: 15px 40px;
+        font-size: 1.2rem;
+    }
+}
+
+/* ===== アニメーション：ライン消去エフェクト ===== */
+@keyframes lineFlash {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+.line-clear {
+    animation: lineFlash 0.15s 3;
+}

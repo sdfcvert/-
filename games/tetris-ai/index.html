@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris AI Battle</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="header">
+        <a href="../../games.html" class="back-button">← ゲーム一覧に戻る</a>
+        <h1 class="game-title">🎮 TETRIS AI BATTLE</h1>
+        <button id="soundToggle" class="sound-button">🔊</button>
+    </div>
+
+    <div class="game-container">
+        <!-- プレイヤー側 -->
+        <div class="player-section">
+            <div class="player-header">
+                <h2>YOU</h2>
+                <div class="player-stats">
+                    <div class="stat">
+                        <span class="stat-label">SCORE</span>
+                        <span class="stat-value" id="playerScore">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">LINES</span>
+                        <span class="stat-value" id="playerLines">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">LEVEL</span>
+                        <span class="stat-value" id="playerLevel">1</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="game-board-container">
+                <canvas id="playerCanvas" width="300" height="600"></canvas>
+                <div class="game-over-overlay" id="playerGameOver">
+                    <h2>GAME OVER</h2>
+                    <p id="resultText"></p>
+                </div>
+            </div>
+
+            <div class="next-piece-container">
+                <h3>NEXT</h3>
+                <canvas id="playerNextCanvas" width="120" height="120"></canvas>
+            </div>
+        </div>
+
+        <!-- 中央のコントロール -->
+        <div class="center-control">
+            <div class="controls-info">
+                <h3>CONTROLS</h3>
+                <div class="control-item">
+                    <span class="key">← →</span>
+                    <span class="desc">Move</span>
+                </div>
+                <div class="control-item">
+                    <span class="key">↑ / W</span>
+                    <span class="desc">Rotate</span>
+                </div>
+                <div class="control-item">
+                    <span class="key">↓ / S</span>
+                    <span class="desc">Soft Drop</span>
+                </div>
+                <div class="control-item">
+                    <span class="key">SPACE</span>
+                    <span class="desc">Hard Drop</span>
+                </div>
+            </div>
+
+            <button id="startButton" class="start-button">START GAME</button>
+            <button id="pauseButton" class="pause-button" style="display: none;">PAUSE</button>
+            <button id="restartButton" class="restart-button" style="display: none;">RESTART</button>
+        </div>
+
+        <!-- AI側 -->
+        <div class="player-section ai-section">
+            <div class="player-header">
+                <h2>AI OPPONENT</h2>
+                <div class="player-stats">
+                    <div class="stat">
+                        <span class="stat-label">SCORE</span>
+                        <span class="stat-value" id="aiScore">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">LINES</span>
+                        <span class="stat-value" id="aiLines">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">LEVEL</span>
+                        <span class="stat-value" id="aiLevel">1</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="game-board-container">
+                <canvas id="aiCanvas" width="300" height="600"></canvas>
+                <div class="game-over-overlay" id="aiGameOver">
+                    <h2>AI DEFEATED</h2>
+                </div>
+            </div>
+
+            <div class="next-piece-container">
+                <h3>NEXT</h3>
+                <canvas id="aiNextCanvas" width="120" height="120"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- パーティクルコンテナ -->
+    <div id="particleContainer"></div>
+
+    <script src="tetris.js"></script>
+</body>
+</html>

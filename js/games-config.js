@@ -16,22 +16,14 @@
  */
 
 const GAMES = [
-    // ===== サンプルゲーム（削除可能） =====
+    // ===== 実装済みゲーム =====
     {
-        id: "sample-game-1",
-        name: "サンプルゲーム 1",
-        description: "これはサンプルゲームです。実際のゲームを追加する際は、このエントリを削除してください。",
-        icon: "🎯",
-        url: "games/sample-1/",
-        status: "coming-soon"
-    },
-    {
-        id: "sample-game-2",
-        name: "サンプルゲーム 2",
-        description: "これも見本です。新しいゲームを追加するには、上記の形式に従ってください。",
-        icon: "🎲",
-        url: "games/sample-2/",
-        status: "coming-soon"
+        id: "tetris-ai-battle",
+        name: "Tetris AI Battle",
+        description: "AIと対戦できる本格的なテトリス。矢印キーまたはWASDで操作。スペースキーでハードドロップ。",
+        icon: "🎮",
+        url: "games/tetris-ai/",
+        status: "available"
     },
 
     // ===== ここに新しいゲームを追加 =====
