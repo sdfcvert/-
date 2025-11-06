@@ -463,8 +463,12 @@ class TetrisGame {
 class TetrisAI {
     constructor(game) {
         this.game = game;
-        this.thinkDelay = 100;
+        this.thinkDelay = 1200; // 人間らしい思考時間
         this.lastThink = 0;
+        this.isExecuting = false;
+        this.moveQueue = [];
+        this.moveDelay = 80; // 移動アニメーションの間隔
+        this.lastMoveTime = 0;
     }
 
     findBestMove() {
@@ -534,26 +538,74 @@ class TetrisAI {
     executeMove(move) {
         if (!move) return;
 
-        // 回転
+        // 移動キューを作成
+        this.moveQueue = [];
+
+        // 回転をキューに追加
         for (let i = 0; i < move.rotation; i++) {
-            this.game.rotate();
+            this.moveQueue.push({ type: 'rotate' });
         }
 
-        // 横移動
+        // 横移動をキューに追加
         const targetX = move.x;
-        while (this.game.currentPiece.x < targetX) {
-            if (!this.game.moveRight()) break;
-        }
-        while (this.game.currentPiece.x > targetX) {
-            if (!this.game.moveLeft()) break;
+        const currentX = this.game.currentPiece.x;
+        const deltaX = targetX - currentX;
+
+        if (deltaX > 0) {
+            for (let i = 0; i < deltaX; i++) {
+                this.moveQueue.push({ type: 'right' });
+            }
+        } else if (deltaX < 0) {
+            for (let i = 0; i < Math.abs(deltaX); i++) {
+                this.moveQueue.push({ type: 'left' });
+            }
         }
 
-        // ハードドロップ
-        this.game.hardDrop();
+        // ハードドロップをキューに追加
+        this.moveQueue.push({ type: 'drop' });
+
+        this.isExecuting = true;
+    }
+
+    processQueue(deltaTime) {
+        if (!this.isExecuting || this.moveQueue.length === 0) {
+            this.isExecuting = false;
+            return;
+        }
+
+        this.lastMoveTime += deltaTime;
+
+        if (this.lastMoveTime > this.moveDelay) {
+            const action = this.moveQueue.shift();
+
+            switch (action.type) {
+                case 'rotate':
+                    this.game.rotate();
+                    break;
+                case 'left':
+                    this.game.moveLeft();
+                    break;
+                case 'right':
+                    this.game.moveRight();
+                    break;
+                case 'drop':
+                    this.game.hardDrop();
+                    this.isExecuting = false;
+                    break;
+            }
+
+            this.lastMoveTime = 0;
+        }
     }
 
     update(deltaTime) {
         if (this.game.gameOver) return;
+
+        // 移動中の場合はキューを処理
+        if (this.isExecuting) {
+            this.processQueue(deltaTime);
+            return;
+        }
 
         this.lastThink += deltaTime;
 

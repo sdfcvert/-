@@ -96,11 +96,13 @@ function createGameCard(game) {
     card.appendChild(description);
     card.appendChild(footer);
 
-    // クリックイベントを追加（利用可能なゲームのみ）
+    // クリックイベントを追加
     if (game.status === 'available') {
         card.style.cursor = 'pointer';
-        card.addEventListener('click', () => {
-            navigateToGame(game);
+        card.addEventListener('click', (e) => {
+            e.preventDefault();
+            // ゲームURLに遷移
+            window.location.href = game.url;
         });
     } else {
         card.style.cursor = 'not-allowed';
