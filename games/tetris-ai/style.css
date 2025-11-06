@@ -94,6 +94,12 @@ body {
     gap: 20px;
 }
 
+.game-area {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
 .player-header {
     text-align: center;
 }
@@ -213,6 +219,14 @@ canvas {
 
 .next-piece-container canvas {
     border: 2px solid rgba(255, 215, 0, 0.3);
+}
+
+.next-left {
+    order: -1;
+}
+
+.next-right {
+    order: 1;
 }
 
 /* ===== 中央コントロール ===== */
@@ -409,4 +423,24 @@ canvas {
 
 .line-clear {
     animation: lineFlash 0.15s 3;
+}
+
+/* ===== アクションテキストアニメーション ===== */
+@keyframes actionFade {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+    }
+    20% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+    80% {
+        opacity: 1;
+        transform: translate(-50%, -70%) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -90%) scale(0.8);
+    }
 }

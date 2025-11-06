@@ -34,17 +34,19 @@
                 </div>
             </div>
 
-            <div class="game-board-container">
-                <canvas id="playerCanvas" width="300" height="600"></canvas>
-                <div class="game-over-overlay" id="playerGameOver">
-                    <h2>GAME OVER</h2>
-                    <p id="resultText"></p>
+            <div class="game-area">
+                <div class="next-piece-container next-left">
+                    <h3>NEXT</h3>
+                    <canvas id="playerNextCanvas" width="120" height="120"></canvas>
                 </div>
-            </div>
 
-            <div class="next-piece-container">
-                <h3>NEXT</h3>
-                <canvas id="playerNextCanvas" width="120" height="120"></canvas>
+                <div class="game-board-container">
+                    <canvas id="playerCanvas" width="300" height="600"></canvas>
+                    <div class="game-over-overlay" id="playerGameOver">
+                        <h2>GAME OVER</h2>
+                        <p id="resultText"></p>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -95,16 +97,18 @@
                 </div>
             </div>
 
-            <div class="game-board-container">
-                <canvas id="aiCanvas" width="300" height="600"></canvas>
-                <div class="game-over-overlay" id="aiGameOver">
-                    <h2>AI DEFEATED</h2>
+            <div class="game-area">
+                <div class="game-board-container">
+                    <canvas id="aiCanvas" width="300" height="600"></canvas>
+                    <div class="game-over-overlay" id="aiGameOver">
+                        <h2>AI DEFEATED</h2>
+                    </div>
                 </div>
-            </div>
 
-            <div class="next-piece-container">
-                <h3>NEXT</h3>
-                <canvas id="aiNextCanvas" width="120" height="120"></canvas>
+                <div class="next-piece-container next-right">
+                    <h3>NEXT</h3>
+                    <canvas id="aiNextCanvas" width="120" height="120"></canvas>
+                </div>
             </div>
         </div>
     </div>

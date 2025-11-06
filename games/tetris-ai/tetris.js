@@ -93,6 +93,12 @@ class TetrisGame {
         this.dropInterval = INITIAL_SPEED;
         this.lastTime = 0;
 
+        // 技システム
+        this.combo = 0;
+        this.backToBack = 0;
+        this.lastMoveWasRotate = false;
+        this.lastClearWasDifficult = false;
+
         this.initNextPiece();
         this.spawnPiece();
     }
@@ -102,7 +108,7 @@ class TetrisGame {
         const randomPiece = pieces[Math.floor(Math.random() * pieces.length)];
         this.nextPiece = {
             type: randomPiece,
-            shape: TETROMINOS[randomPiece].shape,
+            shape: JSON.parse(JSON.stringify(TETROMINOS[randomPiece].shape)),
             color: TETROMINOS[randomPiece].color,
             x: 0,
             y: 0
@@ -112,7 +118,9 @@ class TetrisGame {
     spawnPiece() {
         if (this.nextPiece) {
             this.currentPiece = {
-                ...this.nextPiece,
+                type: this.nextPiece.type,
+                shape: JSON.parse(JSON.stringify(this.nextPiece.shape)),
+                color: this.nextPiece.color,
                 x: Math.floor(COLS / 2) - Math.floor(this.nextPiece.shape[0].length / 2),
                 y: 0
             };
@@ -165,32 +173,51 @@ class TetrisGame {
     }
 
     rotate() {
-        const piece = this.currentPiece;
-        const originalShape = piece.shape;
+        if (!this.currentPiece) return false;
 
-        // 回転処理
+        const piece = this.currentPiece;
+        const originalShape = JSON.parse(JSON.stringify(piece.shape));
+        const originalX = piece.x;
+
+        // 回転処理（深いコピーを作成）
         const newShape = piece.shape[0].map((_, i) =>
             piece.shape.map(row => row[i]).reverse()
         );
 
         piece.shape = newShape;
 
-        // 壁蹴り処理
-        let offset = 0;
-        while (this.collides()) {
-            piece.x += offset;
-            offset = -(offset + (offset > 0 ? 1 : -1));
-            if (Math.abs(offset) > piece.shape[0].length) {
-                piece.shape = originalShape;
-                return false;
+        // 壁蹴り処理（SRS風）
+        const kicks = [
+            { x: 0, y: 0 },
+            { x: -1, y: 0 },
+            { x: 1, y: 0 },
+            { x: 0, y: -1 },
+            { x: -1, y: -1 },
+            { x: 1, y: -1 }
+        ];
+
+        for (const kick of kicks) {
+            piece.x = originalX + kick.x;
+            piece.y = piece.y + kick.y;
+
+            if (!this.collides()) {
+                this.lastMoveWasRotate = true;
+                return true;
             }
+
+            piece.y = piece.y - kick.y;
         }
-        return true;
+
+        // すべての壁蹴りが失敗した場合、元に戻す
+        piece.shape = originalShape;
+        piece.x = originalX;
+        return false;
     }
 
     moveLeft() {
         if (!this.collides(this.currentPiece, -1, 0)) {
             this.currentPiece.x--;
+            this.lastMoveWasRotate = false;
             return true;
         }
         return false;
@@ -199,6 +226,7 @@ class TetrisGame {
     moveRight() {
         if (!this.collides(this.currentPiece, 1, 0)) {
             this.currentPiece.x++;
+            this.lastMoveWasRotate = false;
             return true;
         }
         return false;
@@ -207,6 +235,7 @@ class TetrisGame {
     moveDown() {
         if (!this.collides(this.currentPiece, 0, 1)) {
             this.currentPiece.y++;
+            this.lastMoveWasRotate = false;
             return true;
         }
         return false;
@@ -224,6 +253,33 @@ class TetrisGame {
         return this.spawnPiece();
     }
 
+    // T-spinを検出
+    detectTSpin() {
+        if (this.currentPiece.type !== 'T' || !this.lastMoveWasRotate) {
+            return false;
+        }
+
+        // T字ミノの4隅をチェック
+        const corners = [
+            { x: 0, y: 0 },
+            { x: 2, y: 0 },
+            { x: 0, y: 2 },
+            { x: 2, y: 2 }
+        ];
+
+        let filledCorners = 0;
+        for (const corner of corners) {
+            const x = this.currentPiece.x + corner.x;
+            const y = this.currentPiece.y + corner.y;
+
+            if (x < 0 || x >= COLS || y < 0 || y >= ROWS || this.board[y][x]) {
+                filledCorners++;
+            }
+        }
+
+        return filledCorners >= 3;
+    }
+
     clearLines() {
         let linesCleared = 0;
         const clearedRows = [];
@@ -239,10 +295,52 @@ class TetrisGame {
         }
 
         if (linesCleared > 0) {
-            // スコア計算
-            const points = [0, 100, 300, 500, 800];
-            this.score += points[linesCleared] * this.level;
+            // 基本スコア
+            const basePoints = [0, 100, 300, 500, 800];
+            let points = basePoints[linesCleared] * this.level;
+
+            let actionName = '';
+            const isTSpin = this.detectTSpin();
+            const isTetris = linesCleared === 4;
+            const isDifficult = isTSpin || isTetris;
+
+            // T-spinボーナス
+            if (isTSpin) {
+                const tspinPoints = [0, 800, 1200, 1600];
+                points = tspinPoints[linesCleared] * this.level;
+                actionName = `T-SPIN ${linesCleared === 1 ? 'SINGLE' : linesCleared === 2 ? 'DOUBLE' : 'TRIPLE'}!`;
+            } else if (isTetris) {
+                actionName = 'TETRIS!';
+            }
+
+            // Back-to-Backボーナス
+            if (isDifficult && this.lastClearWasDifficult) {
+                points = Math.floor(points * 1.5);
+                this.backToBack++;
+                if (actionName) actionName = `B2B ${actionName}`;
+            } else {
+                this.backToBack = 0;
+            }
+
+            // コンボボーナス
+            this.combo++;
+            if (this.combo > 1) {
+                points += 50 * this.combo * this.level;
+                if (actionName) {
+                    actionName += ` COMBO x${this.combo}`;
+                } else {
+                    actionName = `COMBO x${this.combo}`;
+                }
+            }
+
+            this.score += points;
             this.lines += linesCleared;
+            this.lastClearWasDifficult = isDifficult;
+
+            // アクション表示
+            if (actionName && !this.isAI) {
+                showActionText(actionName, this.canvas, points);
+            }
 
             // レベルアップ
             const newLevel = Math.floor(this.lines / 10) + 1;
@@ -255,6 +353,9 @@ class TetrisGame {
             if (!this.isAI) {
                 createLineClearEffect(clearedRows, this.canvas);
             }
+        } else {
+            // ラインが消えなかった場合、コンボをリセット
+            this.combo = 0;
         }
     }
 
@@ -412,7 +513,7 @@ class TetrisGame {
     }
 
     // AIのための評価関数
-    evaluateBoard() {
+    evaluateBoard(isTSpin = false, linesCleared = 0) {
         let score = 0;
         let holes = 0;
         let bumpiness = 0;
@@ -453,7 +554,22 @@ class TetrisGame {
         }
 
         // スコア計算（重みは調整可能）
-        score = completeLines * 100 - holes * 50 - bumpiness * 10 - aggregateHeight * 5;
+        score = completeLines * 150 - holes * 60 - bumpiness * 12 - aggregateHeight * 6;
+
+        // テトリス（4ライン消し）ボーナス
+        if (linesCleared === 4) {
+            score += 500;
+        }
+
+        // T-spinボーナス
+        if (isTSpin && linesCleared > 0) {
+            score += 400 * linesCleared;
+        }
+
+        // コンボボーナス
+        if (this.combo > 1) {
+            score += 100 * this.combo;
+        }
 
         return score;
     }
@@ -519,10 +635,44 @@ class TetrisAI {
                     }
                 }
 
+                // T-spin検出
+                let isTSpin = false;
+                if (testPiece.type === 'T' && rotation > 0) {
+                    const corners = [
+                        { x: 0, y: 0 },
+                        { x: 2, y: 0 },
+                        { x: 0, y: 2 },
+                        { x: 2, y: 2 }
+                    ];
+
+                    let filledCorners = 0;
+                    for (const corner of corners) {
+                        const cx = testPiece.x + corner.x;
+                        const cy = testPiece.y + corner.y;
+
+                        if (cx < 0 || cx >= COLS || cy < 0 || cy >= ROWS || simulatedBoard[cy][cx]) {
+                            filledCorners++;
+                        }
+                    }
+
+                    isTSpin = filledCorners >= 3;
+                }
+
+                // ライン消去をシミュレート
+                let linesCleared = 0;
+                for (let sy = ROWS - 1; sy >= 0; sy--) {
+                    if (simulatedBoard[sy].every(cell => cell !== 0)) {
+                        simulatedBoard.splice(sy, 1);
+                        simulatedBoard.unshift(Array(COLS).fill(0));
+                        linesCleared++;
+                        sy++;
+                    }
+                }
+
                 // 一時的にボードを置き換えて評価
                 const originalBoard = this.game.board;
                 this.game.board = simulatedBoard;
-                const score = this.game.evaluateBoard();
+                const score = this.game.evaluateBoard(isTSpin, linesCleared);
                 this.game.board = originalBoard;
 
                 if (score > bestScore) {
@@ -641,6 +791,28 @@ function createParticle(x, y) {
     document.getElementById('particleContainer').appendChild(particle);
 
     setTimeout(() => particle.remove(), 1000);
+}
+
+function showActionText(text, canvas, points) {
+    const rect = canvas.getBoundingClientRect();
+    const actionText = document.createElement('div');
+    actionText.className = 'action-text';
+    actionText.style.position = 'fixed';
+    actionText.style.left = (rect.left + rect.width / 2) + 'px';
+    actionText.style.top = (rect.top + rect.height / 2) + 'px';
+    actionText.style.transform = 'translate(-50%, -50%)';
+    actionText.style.fontSize = '2rem';
+    actionText.style.fontWeight = '700';
+    actionText.style.color = '#ffd700';
+    actionText.style.textShadow = '0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.5)';
+    actionText.style.zIndex = '1001';
+    actionText.style.pointerEvents = 'none';
+    actionText.style.animation = 'actionFade 2s ease-out forwards';
+    actionText.innerHTML = `${text}<br><span style="font-size: 1.2rem; color: #fff;">+${points}</span>`;
+
+    document.body.appendChild(actionText);
+
+    setTimeout(() => actionText.remove(), 2000);
 }
 
 // ===== ゲーム管理 =====

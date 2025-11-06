@@ -22,7 +22,7 @@ const GAMES = [
         name: "Tetris AI Battle",
         description: "AIと対戦できる本格的なテトリス。矢印キーまたはWASDで操作。スペースキーでハードドロップ。",
         icon: "🎮",
-        url: "games/tetris-ai/",
+        url: "games/tetris-ai/index.html",
         status: "available"
     },
 
