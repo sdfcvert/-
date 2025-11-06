@@ -19,12 +19,20 @@ function loadGames() {
     const gamesGrid = document.getElementById('games-grid');
     const noGamesMessage = document.getElementById('no-games-message');
 
+    // デバッグ用ログ
+    console.log('loadGames() called');
+    console.log('GAMES array:', GAMES);
+    console.log('Number of games:', GAMES ? GAMES.length : 0);
+
     // ゲームが存在しない場合
     if (!GAMES || GAMES.length === 0) {
+        console.log('No games found - showing message');
         gamesGrid.style.display = 'none';
         noGamesMessage.style.display = 'block';
         return;
     }
+
+    console.log('Games found - creating cards');
 
     // 利用可能なゲームのみフィルタ（オプション）
     // すべて表示したい場合は、この行をコメントアウト

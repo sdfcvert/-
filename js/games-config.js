@@ -45,6 +45,10 @@ const GAMES = [
     // },
 ];
 
+// デバッグ用ログ
+console.log('games-config.js loaded');
+console.log('GAMES array defined with', GAMES.length, 'games');
+
 /**
  * ステータスのラベル定義
  */
