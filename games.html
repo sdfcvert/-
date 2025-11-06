@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Platform - ゲーム選択</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="games-page">
+    <div class="container">
+        <header class="games-header">
+            <button class="back-button" onclick="location.href='index.html'">← ホームに戻る</button>
+            <h1 class="page-title">ゲーム一覧</h1>
+        </header>
+
+        <main class="games-content">
+            <div id="games-grid" class="games-grid">
+                <!-- ゲームは JavaScript で動的に追加されます -->
+            </div>
+
+            <div id="no-games-message" class="no-games-message" style="display: none;">
+                <p>現在、利用可能なゲームがありません。</p>
+                <p>近日中に追加予定です！</p>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/games-config.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

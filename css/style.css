@@ -1,0 +1,308 @@
+/* ===== リセットとベーススタイル ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #3d7dc9 100%);
+    min-height: 100vh;
+    color: #ffffff;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* ===== ホームページスタイル ===== */
+.home-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.main-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.platform-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    background: linear-gradient(45deg, #ffd700, #ffed4e, #ff9500);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.platform-subtitle {
+    font-size: 1.2rem;
+    color: #d0e7ff;
+    font-weight: 300;
+}
+
+.home-content {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 60px;
+}
+
+.welcome-section {
+    width: 100%;
+    max-width: 700px;
+}
+
+.welcome-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 40px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.welcome-card h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: #ffd700;
+}
+
+.description {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    margin-bottom: 15px;
+    color: #e0f2ff;
+}
+
+.features {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 30px;
+    gap: 20px;
+}
+
+.feature-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.feature-icon {
+    font-size: 2.5rem;
+}
+
+.feature-text {
+    font-size: 0.95rem;
+    color: #b8d7ff;
+}
+
+/* ===== スタートボタン ===== */
+.start-button-container {
+    display: flex;
+    justify-content: center;
+    position: fixed;
+    bottom: 60px;
+    left: 0;
+    right: 0;
+}
+
+.start-button {
+    background: linear-gradient(135deg, #ff9500, #ffd700);
+    color: #1e3c72;
+    font-size: 1.5rem;
+    font-weight: 700;
+    padding: 20px 80px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(255, 149, 0, 0.4);
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.start-button:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(255, 149, 0, 0.6);
+    background: linear-gradient(135deg, #ffa520, #ffe44e);
+}
+
+.start-button:active {
+    transform: translateY(-2px);
+}
+
+/* ===== ゲーム選択ページスタイル ===== */
+.games-page {
+    background: linear-gradient(135deg, #0f2847 0%, #1e3c72 50%, #2a5298 100%);
+}
+
+.games-header {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.back-button {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.back-button:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateX(-4px);
+}
+
+.page-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #ffd700;
+}
+
+/* ===== ゲームグリッド ===== */
+.games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+    padding: 20px 0;
+}
+
+.game-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    padding: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+}
+
+.game-card:hover {
+    transform: translateY(-8px);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 215, 0, 0.6);
+    box-shadow: 0 12px 32px rgba(255, 215, 0, 0.3);
+}
+
+.game-card-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.game-icon {
+    font-size: 2.5rem;
+}
+
+.game-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #ffd700;
+}
+
+.game-description {
+    color: #d0e7ff;
+    line-height: 1.6;
+    font-size: 0.95rem;
+    flex-grow: 1;
+}
+
+.game-footer {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.game-status {
+    display: inline-block;
+    padding: 6px 14px;
+    background: rgba(76, 175, 80, 0.3);
+    border: 1px solid rgba(76, 175, 80, 0.6);
+    border-radius: 20px;
+    font-size: 0.85rem;
+    color: #a8f5a8;
+}
+
+/* ===== メッセージ ===== */
+.no-games-message {
+    text-align: center;
+    margin-top: 80px;
+    padding: 60px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.no-games-message p {
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+    color: #d0e7ff;
+}
+
+/* ===== レスポンシブデザイン ===== */
+@media (max-width: 768px) {
+    .platform-title {
+        font-size: 2.5rem;
+    }
+
+    .welcome-card {
+        padding: 30px 20px;
+    }
+
+    .features {
+        flex-direction: column;
+    }
+
+    .start-button {
+        font-size: 1.2rem;
+        padding: 16px 60px;
+    }
+
+    .games-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .games-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .platform-title {
+        font-size: 2rem;
+    }
+
+    .start-button {
+        padding: 14px 50px;
+        font-size: 1.1rem;
+    }
+
+    .game-card {
+        padding: 20px;
+    }
+}

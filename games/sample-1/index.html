@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>サンプルゲーム 1</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: white;
+        }
+
+        .header {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .back-button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-4px);
+        }
+
+        .game-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .game-title {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #ffd700;
+        }
+
+        .game-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .game-content p {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .note {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="../../games.html" class="back-button">← ゲーム一覧に戻る</a>
+        <h2>🎯 サンプルゲーム 1</h2>
+    </div>
+
+    <div class="game-container">
+        <h1 class="game-title">サンプルゲーム</h1>
+        <div class="game-content">
+            <p>これはゲームの構造を示すためのサンプルページです。</p>
+            <p>実際のゲームでは、ここにゲームのコンテンツを配置します。</p>
+
+            <div class="note">
+                <strong>📝 新しいゲームを追加する際のポイント：</strong>
+                <br><br>
+                1. このようなindex.htmlファイルを作成<br>
+                2. 必要に応じてCSS/JavaScriptを追加<br>
+                3. games-config.jsに情報を登録<br>
+                4. 「ゲーム一覧に戻る」リンクを忘れずに！
+            </div>
+        </div>
+    </div>
+</body>
+</html>
