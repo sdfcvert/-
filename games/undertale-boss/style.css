@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Determination+Mono&family=Press+Start+2P&display=swap');
 
 * {
     margin: 0;
@@ -9,13 +9,14 @@
 body {
     background: #000;
     color: #fff;
-    font-family: 'Press Start 2P', monospace;
+    font-family: 'Press Start 2P', 'Determination Mono', monospace;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     overflow: hidden;
     image-rendering: pixelated;
+    user-select: none;
 }
 
 #game-container {
@@ -39,19 +40,19 @@ body {
 #boss-sprite {
     font-size: 80px;
     animation: bossFloat 2s ease-in-out infinite;
-    text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+    filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.3));
 }
 
 @keyframes bossFloat {
     0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
+    50% { transform: translateY(-8px); }
 }
 
 #boss-name {
-    font-size: 12px;
-    color: #ff0;
+    font-size: 11px;
+    color: #fff;
     margin-top: 10px;
-    text-shadow: 2px 2px #000;
+    letter-spacing: 2px;
 }
 
 #boss-hp-container {
@@ -60,8 +61,8 @@ body {
 
 #boss-hp-bar {
     width: 200px;
-    height: 20px;
-    background: #8b0000;
+    height: 18px;
+    background: #000;
     border: 2px solid #fff;
     margin: 5px auto;
     position: relative;
@@ -70,7 +71,7 @@ body {
 
 #boss-hp-fill {
     height: 100%;
-    background: linear-gradient(to right, #ff0, #0f0);
+    background: #00ff00;
     width: 100%;
     transition: width 0.3s ease;
 }
@@ -78,24 +79,24 @@ body {
 #boss-hp-text {
     font-size: 8px;
     color: #fff;
+    margin-top: 4px;
 }
 
 /* プレイヤーステータス */
 #player-status {
     position: absolute;
-    top: 250px;
-    left: 30px;
+    top: 252px;
+    left: 32px;
     font-size: 10px;
 }
 
 #player-name {
     display: inline-block;
-    margin-right: 10px;
+    margin-right: 20px;
 }
 
 #player-lv {
     display: inline-block;
-    color: #ff0;
 }
 
 #player-hp-container {
@@ -106,14 +107,13 @@ body {
 }
 
 .hp-label {
-    color: #ff0;
     font-size: 10px;
 }
 
 #player-hp-bar {
-    width: 120px;
-    height: 20px;
-    background: #8b0000;
+    width: 92px;
+    height: 18px;
+    background: #000;
     border: 2px solid #fff;
     position: relative;
     overflow: hidden;
@@ -136,7 +136,7 @@ body {
     top: 300px;
     left: 50%;
     transform: translateX(-50%);
-    width: 570px;
+    width: 575px;
     height: 140px;
     border: 5px solid #fff;
     background: #000;
@@ -153,13 +153,12 @@ body {
 
 #player-heart {
     position: absolute;
-    font-size: 16px;
+    font-size: 20px;
     color: #ff0000;
     transform: translate(-50%, -50%);
     z-index: 10;
-    transition: all 0.05s linear;
-    filter: drop-shadow(0 0 3px #ff0000);
     pointer-events: none;
+    filter: drop-shadow(0 0 2px #ff0000);
 }
 
 /* ダイアログボックス */
@@ -168,13 +167,13 @@ body {
     top: 300px;
     left: 50%;
     transform: translateX(-50%);
-    width: 570px;
+    width: 575px;
     height: 140px;
     border: 5px solid #fff;
     background: #000;
-    padding: 20px;
-    font-size: 12px;
-    line-height: 1.6;
+    padding: 15px 20px;
+    font-size: 11px;
+    line-height: 1.8;
     display: none;
 }
 
@@ -182,60 +181,80 @@ body {
     color: #fff;
 }
 
-/* メニュー */
+/* メニュー - Undertale風テキストベース */
 #menu {
     position: absolute;
-    bottom: 20px;
+    bottom: 30px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 20px;
+    gap: 60px;
+    align-items: center;
 }
 
 .menu-btn {
     background: none;
-    border: 3px solid #fff;
+    border: none;
     color: #fff;
     font-family: 'Press Start 2P', monospace;
-    font-size: 10px;
-    padding: 10px 15px;
+    font-size: 14px;
+    padding: 8px 16px;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.1s;
-}
-
-.menu-btn:hover {
-    background: #fff;
-    color: #000;
-    transform: scale(1.05);
+    position: relative;
+    transition: all 0.05s;
 }
 
 .menu-btn.selected {
-    background: #ffff00;
-    color: #000;
-    border-color: #ffff00;
+    color: #ffff00;
+}
+
+.menu-btn::before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 6px 0 6px 10px;
+    border-color: transparent transparent transparent #fff;
+    opacity: 0;
+}
+
+.menu-btn.selected::before {
+    opacity: 1;
+    animation: menuPulse 0.5s ease-in-out infinite;
+}
+
+@keyframes menuPulse {
+    0%, 100% { left: -20px; }
+    50% { left: -24px; }
+}
+
+.menu-text {
+    display: block;
 }
 
 .menu-icon {
-    font-size: 14px;
+    display: none;
 }
 
-/* サブメニュー */
+/* サブメニュー - Undertale風 */
 #sub-menu, #item-menu, #mercy-menu {
     position: absolute;
     top: 300px;
     left: 50%;
     transform: translateX(-50%);
-    width: 570px;
+    width: 575px;
     height: 140px;
     border: 5px solid #fff;
     background: #000;
-    padding: 15px;
+    padding: 20px 30px;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 15px;
+    align-content: start;
 }
 
 .sub-menu-btn, .item-btn, .mercy-btn {
@@ -243,37 +262,48 @@ body {
     border: none;
     color: #fff;
     font-family: 'Press Start 2P', monospace;
-    font-size: 10px;
-    padding: 10px;
+    font-size: 11px;
+    padding: 8px 0;
     cursor: pointer;
     text-align: left;
-    transition: all 0.1s;
+    transition: all 0.05s;
+    position: relative;
 }
 
-.sub-menu-btn:hover, .item-btn:hover, .mercy-btn:hover {
+.sub-menu-btn.selected, .item-btn.selected, .mercy-btn.selected {
     color: #ffff00;
-    transform: translateX(5px);
+}
+
+.sub-menu-btn.selected::before,
+.item-btn.selected::before,
+.mercy-btn.selected::before {
+    content: '❤';
+    position: absolute;
+    left: -25px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #ff0000;
+    font-size: 14px;
 }
 
 .sub-menu-btn.used, .item-btn.used {
-    color: #666;
+    color: #555;
     text-decoration: line-through;
-    cursor: not-allowed;
 }
 
-/* 攻撃バー */
+/* 攻撃バー - よりUndertale風に */
 #attack-bar-container {
     position: absolute;
     top: 320px;
     left: 50%;
     transform: translateX(-50%);
-    width: 500px;
+    width: 520px;
 }
 
 #attack-bar {
     width: 100%;
-    height: 40px;
-    border: 3px solid #fff;
+    height: 50px;
+    border: 4px solid #fff;
     background: #000;
     position: relative;
     overflow: hidden;
@@ -283,18 +313,20 @@ body {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    width: 40px;
+    width: 50px;
     height: 100%;
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.2);
+    border-left: 2px solid rgba(255, 255, 255, 0.4);
+    border-right: 2px solid rgba(255, 255, 255, 0.4);
 }
 
 #attack-slider {
     position: absolute;
     left: 0;
-    width: 4px;
+    width: 6px;
     height: 100%;
     background: #fff;
-    box-shadow: 0 0 10px #fff;
+    box-shadow: 0 0 8px #fff, 0 0 16px #fff;
 }
 
 /* ゲームオーバー/勝利画面 */
@@ -304,7 +336,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.95);
+    background: #000;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -313,35 +345,23 @@ body {
 }
 
 #game-over-text {
-    font-size: 32px;
+    font-size: 36px;
     color: #ff0000;
-    margin-bottom: 30px;
-    text-shadow: 4px 4px #000;
-    animation: pulse 1s ease-in-out infinite;
+    margin-bottom: 40px;
+    letter-spacing: 4px;
 }
 
 #victory-text {
     font-size: 32px;
     color: #ffff00;
     margin-bottom: 20px;
-    text-shadow: 4px 4px #000;
-    animation: victoryPulse 1s ease-in-out infinite;
+    letter-spacing: 2px;
 }
 
 #victory-subtext {
     font-size: 12px;
     color: #fff;
-    margin-bottom: 30px;
-}
-
-@keyframes pulse {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.1); opacity: 0.8; }
-}
-
-@keyframes victoryPulse {
-    0%, 100% { transform: scale(1) rotate(-2deg); }
-    50% { transform: scale(1.1) rotate(2deg); }
+    margin-bottom: 40px;
 }
 
 #continue-btn {
@@ -349,16 +369,25 @@ body {
     border: 3px solid #fff;
     color: #fff;
     font-family: 'Press Start 2P', monospace;
-    font-size: 12px;
-    padding: 15px 30px;
+    font-size: 14px;
+    padding: 12px 30px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.1s;
 }
 
 #continue-btn:hover {
     background: #fff;
     color: #000;
-    transform: scale(1.1);
+}
+
+/* インストラクション */
+#instructions {
+    position: absolute;
+    bottom: 10px;
+    right: 20px;
+    font-size: 7px;
+    color: #666;
+    text-align: right;
 }
 
 /* ユーティリティ */
@@ -369,24 +398,33 @@ body {
 /* ダメージフラッシュ */
 @keyframes damageFlash {
     0%, 100% { filter: brightness(1); }
-    50% { filter: brightness(3); }
+    25%, 75% { filter: brightness(2.5); }
+    50% { filter: brightness(1); }
 }
 
 .damage-flash {
-    animation: damageFlash 0.2s ease-in-out 3;
+    animation: damageFlash 0.3s ease-in-out 2;
 }
 
 /* ヒールエフェクト */
 @keyframes healEffect {
     0% { transform: translateY(0) scale(1); opacity: 1; }
-    100% { transform: translateY(-30px) scale(1.5); opacity: 0; }
+    100% { transform: translateY(-40px) scale(1.3); opacity: 0; }
 }
 
 .heal-text {
     position: absolute;
     color: #00ff00;
-    font-size: 14px;
+    font-size: 16px;
+    font-weight: bold;
     pointer-events: none;
-    animation: healEffect 1s ease-out forwards;
+    animation: healEffect 1.2s ease-out forwards;
     text-shadow: 2px 2px #000;
+    z-index: 100;
+}
+
+/* テキストフェードイン */
+@keyframes textFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }

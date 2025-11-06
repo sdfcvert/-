@@ -1,6 +1,7 @@
 // ===== ゲーム状態管理 =====
 const GameState = {
     MENU: 'menu',
+    SUB_MENU: 'sub_menu',
     ATTACK: 'attack',
     DODGE: 'dodge',
     DIALOG: 'dialog',
@@ -10,14 +11,16 @@ const GameState = {
 
 // ===== ゲームデータ =====
 const game = {
-    state: GameState.MENU,
+    state: GameState.DIALOG,
+    currentMenuIndex: 0,
+    currentSubMenuIndex: 0,
     player: {
         name: 'FRISK',
         hp: 20,
         maxHp: 20,
-        x: 285,
+        x: 287,
         y: 70,
-        speed: 3,
+        speed: 4.5, // より速く
         invulnerable: false,
         invulnerableTime: 0
     },
@@ -29,15 +32,7 @@ const game = {
         defense: 5,
         canSpare: false,
         mercy: 0,
-        turnCount: 0,
-        dialogues: [
-            "* The evil boss blocks your way!",
-            "* The boss laughs menacingly!",
-            "* The boss prepares a powerful attack!",
-            "* The boss seems weakened...",
-            "* The boss is desperate!",
-            "* You feel determination..."
-        ]
+        turnCount: 0
     },
     items: {
         pie: { name: 'Butterscotch Pie', heal: 99, used: false },
@@ -54,66 +49,22 @@ const game = {
     bullets: [],
     keys: {},
     attackSliderPos: 0,
-    attackSliderSpeed: 4,
-    attackSliderDirection: 1
+    attackSliderSpeed: 5, // 少し速く
+    attackSliderDirection: 1,
+    dialogCallback: null,
+    dialogTyping: false,
+    dialogSkippable: false
 };
 
-// ===== DOM要素 =====
-const elements = {
-    battleBox: document.getElementById('battle-box'),
-    canvas: document.getElementById('battle-canvas'),
-    playerHeart: document.getElementById('player-heart'),
-    playerHpFill: document.getElementById('player-hp-fill'),
-    playerHpText: document.getElementById('player-hp-text'),
-    bossHpFill: document.getElementById('boss-hp-fill'),
-    bossHp: document.getElementById('boss-hp'),
-    dialogBox: document.getElementById('dialog-box'),
-    dialogText: document.getElementById('dialog-text'),
-    menu: document.getElementById('menu'),
-    subMenu: document.getElementById('sub-menu'),
-    itemMenu: document.getElementById('item-menu'),
-    mercyMenu: document.getElementById('mercy-menu'),
-    attackBarContainer: document.getElementById('attack-bar-container'),
-    attackSlider: document.getElementById('attack-slider'),
-    gameOver: document.getElementById('game-over'),
-    victory: document.getElementById('victory'),
-    bossSprite: document.getElementById('boss-sprite')
-};
+const ctx = document.getElementById('battle-canvas').getContext('2d');
 
-const ctx = elements.canvas.getContext('2d');
+// メニュー配列
+const MENU_ACTIONS = ['fight', 'act', 'item', 'mercy'];
 
 // ===== 初期化 =====
 function init() {
-    // メニューボタン
-    document.querySelectorAll('.menu-btn').forEach(btn => {
-        btn.addEventListener('click', () => handleMenuAction(btn.dataset.action));
-    });
-
-    // ACTサブメニュー
-    document.querySelectorAll('.sub-menu-btn').forEach(btn => {
-        btn.addEventListener('click', () => handleActAction(btn.dataset.act));
-    });
-
-    // アイテムメニュー
-    document.querySelectorAll('.item-btn').forEach(btn => {
-        btn.addEventListener('click', () => handleItemAction(btn.dataset.item, parseInt(btn.dataset.heal)));
-    });
-
-    // MERCYメニュー
-    document.querySelectorAll('.mercy-btn').forEach(btn => {
-        btn.addEventListener('click', () => handleMercyAction(btn.dataset.mercy));
-    });
-
     // キーボード入力
-    document.addEventListener('keydown', (e) => {
-        game.keys[e.key] = true;
-
-        // 攻撃フェーズでスペースキー
-        if (game.state === GameState.ATTACK && e.key === ' ') {
-            handleAttackTiming();
-        }
-    });
-
+    document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('keyup', (e) => {
         game.keys[e.key] = false;
     });
@@ -127,9 +78,113 @@ function init() {
     // ゲーム開始
     showDialog("* The evil boss blocks your way!", () => {
         game.state = GameState.MENU;
+        updateMenuSelection();
     });
 
     gameLoop();
+}
+
+// ===== キーボード操作 =====
+function handleKeyDown(e) {
+    game.keys[e.key] = true;
+    const key = e.key.toLowerCase();
+
+    // ダイアログ中
+    if (game.state === GameState.DIALOG) {
+        if ((key === 'z' || key === 'enter' || key === ' ') && game.dialogSkippable) {
+            skipDialog();
+        }
+        return;
+    }
+
+    // メニュー選択
+    if (game.state === GameState.MENU) {
+        if (key === 'arrowleft') {
+            game.currentMenuIndex = Math.max(0, game.currentMenuIndex - 1);
+            updateMenuSelection();
+            e.preventDefault();
+        } else if (key === 'arrowright') {
+            game.currentMenuIndex = Math.min(MENU_ACTIONS.length - 1, game.currentMenuIndex + 1);
+            updateMenuSelection();
+            e.preventDefault();
+        } else if (key === 'z' || key === 'enter' || key === ' ') {
+            handleMenuAction(MENU_ACTIONS[game.currentMenuIndex]);
+            e.preventDefault();
+        }
+        return;
+    }
+
+    // サブメニュー選択
+    if (game.state === GameState.SUB_MENU) {
+        const currentMenu = getCurrentSubMenu();
+        if (!currentMenu) return;
+
+        const items = Array.from(currentMenu.children).filter(item => !item.classList.contains('used'));
+
+        if (key === 'arrowleft' || key === 'arrowup') {
+            game.currentSubMenuIndex = Math.max(0, game.currentSubMenuIndex - 1);
+            updateSubMenuSelection(currentMenu, items);
+            e.preventDefault();
+        } else if (key === 'arrowright' || key === 'arrowdown') {
+            game.currentSubMenuIndex = Math.min(items.length - 1, game.currentSubMenuIndex + 1);
+            updateSubMenuSelection(currentMenu, items);
+            e.preventDefault();
+        } else if (key === 'z' || key === 'enter' || key === ' ') {
+            const selectedItem = items[game.currentSubMenuIndex];
+            if (selectedItem) {
+                selectedItem.click();
+            }
+            e.preventDefault();
+        } else if (key === 'x' || key === 'shift') {
+            // キャンセル：メニューに戻る
+            hideAllMenus();
+            game.state = GameState.MENU;
+            document.getElementById('battle-box').style.display = 'block';
+            updateMenuSelection();
+            e.preventDefault();
+        }
+        return;
+    }
+
+    // 攻撃フェーズ
+    if (game.state === GameState.ATTACK && (key === 'z' || key === 'enter' || key === ' ')) {
+        handleAttackTiming();
+        e.preventDefault();
+    }
+}
+
+function getCurrentSubMenu() {
+    if (!document.getElementById('sub-menu').classList.contains('hidden')) {
+        return document.getElementById('sub-menu');
+    }
+    if (!document.getElementById('item-menu').classList.contains('hidden')) {
+        return document.getElementById('item-menu');
+    }
+    if (!document.getElementById('mercy-menu').classList.contains('hidden')) {
+        return document.getElementById('mercy-menu');
+    }
+    return null;
+}
+
+function updateMenuSelection() {
+    const buttons = document.querySelectorAll('.menu-btn');
+    buttons.forEach((btn, index) => {
+        if (index === game.currentMenuIndex) {
+            btn.classList.add('selected');
+        } else {
+            btn.classList.remove('selected');
+        }
+    });
+}
+
+function updateSubMenuSelection(menu, items) {
+    items.forEach((item, index) => {
+        if (index === game.currentSubMenuIndex) {
+            item.classList.add('selected');
+        } else {
+            item.classList.remove('selected');
+        }
+    });
 }
 
 // ===== メニューアクション =====
@@ -137,32 +192,56 @@ function handleMenuAction(action) {
     if (game.state !== GameState.MENU) return;
 
     hideAllMenus();
+    game.currentSubMenuIndex = 0;
 
     switch (action) {
         case 'fight':
             startAttackPhase();
             break;
         case 'act':
-            elements.subMenu.classList.remove('hidden');
-            elements.battleBox.style.display = 'none';
+            game.state = GameState.SUB_MENU;
+            document.getElementById('sub-menu').classList.remove('hidden');
+            document.getElementById('battle-box').style.display = 'none';
+            setupSubMenuListeners('sub-menu-btn', (btn) => handleActAction(btn.dataset.act));
             break;
         case 'item':
-            elements.itemMenu.classList.remove('hidden');
-            elements.battleBox.style.display = 'none';
+            game.state = GameState.SUB_MENU;
+            document.getElementById('item-menu').classList.remove('hidden');
+            document.getElementById('battle-box').style.display = 'none';
             updateItemMenu();
+            setupSubMenuListeners('item-btn', (btn) => handleItemAction(btn.dataset.item, parseInt(btn.dataset.heal)));
             break;
         case 'mercy':
-            elements.mercyMenu.classList.remove('hidden');
-            elements.battleBox.style.display = 'none';
+            game.state = GameState.SUB_MENU;
+            document.getElementById('mercy-menu').classList.remove('hidden');
+            document.getElementById('battle-box').style.display = 'none';
+            setupSubMenuListeners('mercy-btn', (btn) => handleMercyAction(btn.dataset.mercy));
             break;
+    }
+}
+
+function setupSubMenuListeners(className, handler) {
+    const buttons = document.querySelectorAll('.' + className);
+    const availableButtons = Array.from(buttons).filter(btn => !btn.classList.contains('used'));
+
+    buttons.forEach((btn, index) => {
+        btn.onclick = () => {
+            if (!btn.classList.contains('used')) {
+                handler(btn);
+            }
+        };
+    });
+
+    if (availableButtons.length > 0) {
+        updateSubMenuSelection(availableButtons[0].parentElement, availableButtons);
     }
 }
 
 // ===== FIGHT フェーズ =====
 function startAttackPhase() {
     game.state = GameState.ATTACK;
-    elements.battleBox.style.display = 'none';
-    elements.attackBarContainer.classList.remove('hidden');
+    document.getElementById('battle-box').style.display = 'none';
+    document.getElementById('attack-bar-container').classList.remove('hidden');
     game.attackSliderPos = 0;
     game.attackSliderDirection = 1;
 }
@@ -172,78 +251,74 @@ function updateAttackSlider() {
 
     game.attackSliderPos += game.attackSliderSpeed * game.attackSliderDirection;
 
-    if (game.attackSliderPos >= 496) {
+    if (game.attackSliderPos >= 514) {
         game.attackSliderDirection = -1;
     } else if (game.attackSliderPos <= 0) {
         game.attackSliderDirection = 1;
     }
 
-    elements.attackSlider.style.left = game.attackSliderPos + 'px';
+    document.getElementById('attack-slider').style.left = game.attackSliderPos + 'px';
 }
 
 function handleAttackTiming() {
-    // タイミングの精度を計算（中央の40px幅がターゲット）
-    const targetCenter = 250;
-    const targetWidth = 40;
+    const targetCenter = 257;
+    const targetWidth = 50;
     const distance = Math.abs(game.attackSliderPos - targetCenter);
 
     let damageMultiplier = 0;
-    if (distance < targetWidth / 2) {
-        // パーフェクト！
-        damageMultiplier = 2.0;
-        showDamageText('CRITICAL!', game.boss.attackPower * damageMultiplier);
+    let resultText = '';
+
+    if (distance < targetWidth / 4) {
+        damageMultiplier = 2.2;
+        resultText = 'CRITICAL!';
+    } else if (distance < targetWidth / 2) {
+        damageMultiplier = 1.8;
+        resultText = 'GREAT!';
     } else if (distance < targetWidth) {
-        // グッド
-        damageMultiplier = 1.5;
-        showDamageText('GOOD!', game.boss.attackPower * damageMultiplier);
-    } else if (distance < targetWidth * 2) {
-        // 普通
-        damageMultiplier = 1.0;
-        showDamageText('HIT!', game.boss.attackPower * damageMultiplier);
+        damageMultiplier = 1.3;
+        resultText = 'GOOD!';
+    } else if (distance < targetWidth * 1.5) {
+        damageMultiplier = 0.8;
+        resultText = 'OK';
     } else {
-        // ミス
         damageMultiplier = 0.3;
-        showDamageText('MISS...', game.boss.attackPower * damageMultiplier);
+        resultText = 'MISS';
     }
 
-    const damage = Math.floor((game.boss.attackPower + 10) * damageMultiplier);
+    const damage = Math.floor((game.boss.attackPower + 12) * damageMultiplier);
     game.boss.hp = Math.max(0, game.boss.hp - damage);
     updateBossHp();
 
-    // ボスのダメージフラッシュ
-    elements.bossSprite.classList.add('damage-flash');
-    setTimeout(() => elements.bossSprite.classList.remove('damage-flash'), 600);
+    showDamageText(resultText, damage);
 
-    elements.attackBarContainer.classList.add('hidden');
+    document.getElementById('boss-sprite').classList.add('damage-flash');
+    setTimeout(() => document.getElementById('boss-sprite').classList.remove('damage-flash'), 600);
 
-    // 勝利チェック
+    document.getElementById('attack-bar-container').classList.add('hidden');
+
     if (game.boss.hp <= 0) {
         showVictory();
         return;
     }
 
-    // ボスのターン
-    setTimeout(() => {
-        startBossTurn();
-    }, 1000);
+    setTimeout(() => startBossTurn(), 800);
 }
 
 function showDamageText(text, damage) {
     const damageDiv = document.createElement('div');
-    damageDiv.textContent = `${text} ${Math.floor(damage)}`;
+    damageDiv.textContent = `${text} - ${Math.floor(damage)}`;
     damageDiv.style.position = 'absolute';
-    damageDiv.style.top = '120px';
+    damageDiv.style.top = '130px';
     damageDiv.style.left = '50%';
     damageDiv.style.transform = 'translateX(-50%)';
-    damageDiv.style.fontSize = '16px';
-    damageDiv.style.color = damage > 15 ? '#ff0' : '#fff';
+    damageDiv.style.fontSize = damage > 20 ? '18px' : '14px';
+    damageDiv.style.color = damage > 20 ? '#ffff00' : '#fff';
     damageDiv.style.fontFamily = "'Press Start 2P', monospace";
     damageDiv.style.textShadow = '2px 2px #000';
     damageDiv.style.zIndex = '100';
     damageDiv.style.animation = 'healEffect 1s ease-out forwards';
 
     document.getElementById('game-container').appendChild(damageDiv);
-
     setTimeout(() => damageDiv.remove(), 1000);
 }
 
@@ -259,26 +334,26 @@ function handleActAction(actType) {
 
     switch (actType) {
         case 'check':
-            dialogMessage = `* EVIL BOSS - ATK ${game.boss.attackPower} DEF ${game.boss.defense}\n* A terrifying foe that shows no mercy...`;
+            dialogMessage = `* EVIL BOSS - ATK ${game.boss.attackPower} DEF ${game.boss.defense}\\n* A terrifying foe that shows no mercy...`;
             mercyIncrease = 10;
             break;
         case 'talk':
             const talks = [
-                "* You try to reason with the boss.\n* It doesn't seem to care...",
-                "* You tell the boss about determination.\n* It looks slightly confused.",
-                "* You compliment the boss's attacks.\n* It seems flattered!"
+                "* You try to reason with the boss.\\n* It doesn't seem to care...",
+                "* You tell the boss about determination.\\n* It looks slightly confused.",
+                "* You compliment the boss's attacks.\\n* It seems flattered!"
             ];
             dialogMessage = talks[game.boss.turnCount % talks.length];
             mercyIncrease = 15;
             break;
         case 'encourage':
-            dialogMessage = "* You encourage the boss to give up.\n* Its DEFENSE decreased!";
+            dialogMessage = "* You encourage the boss to give up.\\n* Its DEFENSE decreased!";
             game.boss.defense = Math.max(0, game.boss.defense - 2);
             mercyIncrease = 20;
             break;
         case 'threaten':
-            dialogMessage = "* You threaten the boss.\n* It becomes more aggressive!";
-            game.boss.attackPower += 2;
+            dialogMessage = "* You threaten the boss.\\n* It becomes more aggressive!";
+            game.boss.attackPower += 1;
             mercyIncrease = 5;
             break;
     }
@@ -288,9 +363,7 @@ function handleActAction(actType) {
         game.boss.canSpare = true;
     }
 
-    showDialog(dialogMessage, () => {
-        startBossTurn();
-    });
+    showDialog(dialogMessage, () => startBossTurn());
 }
 
 // ===== ITEM システム =====
@@ -305,13 +378,9 @@ function handleItemAction(itemType, heal) {
     const actualHeal = game.player.hp - oldHp;
 
     updatePlayerHp();
-
-    // ヒールエフェクト
     showHealEffect(actualHeal);
 
-    showDialog(`* You ate the ${game.items[itemType].name}.\n* You recovered ${actualHeal} HP!`, () => {
-        startBossTurn();
-    });
+    showDialog(`* You ate the ${game.items[itemType].name}.\\n* You recovered ${actualHeal} HP!`, () => startBossTurn());
 }
 
 function updateItemMenu() {
@@ -328,12 +397,11 @@ function showHealEffect(amount) {
     const healText = document.createElement('div');
     healText.className = 'heal-text';
     healText.textContent = `+${amount}`;
-    healText.style.left = '100px';
+    healText.style.left = '110px';
     healText.style.top = '280px';
 
     document.getElementById('game-container').appendChild(healText);
-
-    setTimeout(() => healText.remove(), 1000);
+    setTimeout(() => healText.remove(), 1200);
 }
 
 // ===== MERCY システム =====
@@ -342,18 +410,15 @@ function handleMercyAction(mercyType) {
 
     if (mercyType === 'spare') {
         if (game.boss.canSpare) {
-            showDialog("* You spared the boss.\n* It thanks you and leaves...", () => {
-                showVictory();
-            });
+            showDialog("* You spared the boss.\\n* It thanks you and leaves...", () => showVictory());
         } else {
-            showDialog("* The boss refuses to be spared!\n* Keep trying...", () => {
-                startBossTurn();
-            });
+            const spareText = game.boss.mercy > 50
+                ? "* The boss is wavering...\\n* But it's not ready yet."
+                : "* The boss refuses to be spared!\\n* Keep trying...";
+            showDialog(spareText, () => startBossTurn());
         }
     } else if (mercyType === 'flee') {
-        showDialog("* You can't escape from a boss fight!", () => {
-            startBossTurn();
-        });
+        showDialog("* You can't escape from a boss fight!", () => startBossTurn());
     }
 }
 
@@ -366,27 +431,23 @@ function startBossTurn() {
         "* The boss's eyes glow red!",
         "* The boss summons dark energy!",
         "* The boss grins wickedly!",
-        "* You feel your sins crawling on your back..."
+        "* You feel your sins crawling..."
     ];
 
-    showDialog(dialogues[game.boss.turnCount % dialogues.length], () => {
-        startDodgePhase();
-    });
+    showDialog(dialogues[game.boss.turnCount % dialogues.length], () => startDodgePhase());
 }
 
 // ===== 回避フェーズ =====
 function startDodgePhase() {
     game.state = GameState.DODGE;
-    elements.dialogBox.style.display = 'none';
-    elements.battleBox.style.display = 'block';
+    document.getElementById('dialog-box').style.display = 'none';
+    document.getElementById('battle-box').style.display = 'block';
     game.bullets = [];
 
-    // プレイヤーをボックス中央に
-    game.player.x = 285;
+    game.player.x = 287;
     game.player.y = 70;
     updateHeartPosition();
 
-    // ランダムな攻撃パターンを選択
     const patterns = [
         createHorizontalBullets,
         createVerticalBullets,
@@ -396,204 +457,205 @@ function startDodgePhase() {
         createSpiralBullets
     ];
 
-    const pattern = patterns[Math.floor(Math.random() * patterns.length)];
-    pattern();
+    patterns[Math.floor(Math.random() * patterns.length)]();
 
-    // 3秒後に終了
-    setTimeout(() => {
-        endDodgePhase();
-    }, 3000);
+    setTimeout(() => endDodgePhase(), 4000); // 4秒に延長
 }
 
 function endDodgePhase() {
     game.state = GameState.MENU;
     game.bullets = [];
-    elements.battleBox.style.display = 'block';
-    ctx.clearRect(0, 0, elements.canvas.width, elements.canvas.height);
-
-    // 次のターン
-    setTimeout(() => {
-        game.state = GameState.MENU;
-    }, 500);
+    document.getElementById('battle-box').style.display = 'block';
+    ctx.clearRect(0, 0, 575, 140);
+    game.currentMenuIndex = 0;
+    setTimeout(() => updateMenuSelection(), 500);
 }
 
-// ===== 弾幕パターン =====
+// ===== 弾幕パターン（速度調整済み） =====
 function createHorizontalBullets() {
-    const rows = 3;
-    for (let i = 0; i < rows; i++) {
+    for (let i = 0; i < 4; i++) {
         setTimeout(() => {
             game.bullets.push({
                 x: -10,
-                y: 20 + i * 40,
-                width: 15,
-                height: 15,
-                vx: 3 + Math.random(),
+                y: 20 + i * 30,
+                width: 12,
+                height: 12,
+                vx: 2.2,
                 vy: 0,
                 color: '#fff'
             });
             game.bullets.push({
-                x: 580,
-                y: 30 + i * 40,
-                width: 15,
-                height: 15,
-                vx: -(3 + Math.random()),
+                x: 585,
+                y: 30 + i * 30,
+                width: 12,
+                height: 12,
+                vx: -2.2,
                 vy: 0,
                 color: '#fff'
+            });
+        }, i * 500);
+    }
+}
+
+function createVerticalBullets() {
+    for (let i = 0; i < 6; i++) {
+        setTimeout(() => {
+            game.bullets.push({
+                x: 50 + i * 85,
+                y: -10,
+                width: 12,
+                height: 12,
+                vx: 0,
+                vy: 1.8,
+                color: '#ff8800'
             });
         }, i * 400);
     }
 }
 
-function createVerticalBullets() {
-    const cols = 5;
-    for (let i = 0; i < cols; i++) {
-        setTimeout(() => {
-            game.bullets.push({
-                x: 50 + i * 100,
-                y: -10,
-                width: 15,
-                height: 15,
-                vx: 0,
-                vy: 2 + Math.random(),
-                color: '#ff8800'
-            });
-        }, i * 300);
-    }
-}
-
 function createCircularBullets() {
-    const count = 12;
-    const centerX = 285;
-    const centerY = 70;
-
+    const count = 16;
     for (let i = 0; i < count; i++) {
         const angle = (Math.PI * 2 * i) / count;
         game.bullets.push({
-            x: centerX + Math.cos(angle) * 80,
-            y: centerY + Math.sin(angle) * 40,
-            width: 12,
-            height: 12,
-            vx: Math.cos(angle) * 2,
-            vy: Math.sin(angle) * 2,
+            x: 287 + Math.cos(angle) * 100,
+            y: 70 + Math.sin(angle) * 50,
+            width: 10,
+            height: 10,
+            vx: Math.cos(angle) * 1.5,
+            vy: Math.sin(angle) * 1.5,
             color: '#ff00ff'
         });
     }
 }
 
 function createRandomBullets() {
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < 20; i++) {
         setTimeout(() => {
             const side = Math.floor(Math.random() * 4);
             let x, y, vx, vy;
 
             switch(side) {
                 case 0: // top
-                    x = Math.random() * 570;
+                    x = Math.random() * 575;
                     y = -10;
                     vx = (Math.random() - 0.5) * 2;
-                    vy = 2 + Math.random();
+                    vy = 1.5 + Math.random() * 0.5;
                     break;
                 case 1: // right
-                    x = 580;
+                    x = 585;
                     y = Math.random() * 140;
-                    vx = -(2 + Math.random());
+                    vx = -(1.5 + Math.random() * 0.5);
                     vy = (Math.random() - 0.5) * 2;
                     break;
                 case 2: // bottom
-                    x = Math.random() * 570;
+                    x = Math.random() * 575;
                     y = 150;
                     vx = (Math.random() - 0.5) * 2;
-                    vy = -(2 + Math.random());
+                    vy = -(1.5 + Math.random() * 0.5);
                     break;
                 case 3: // left
                     x = -10;
                     y = Math.random() * 140;
-                    vx = 2 + Math.random();
+                    vx = 1.5 + Math.random() * 0.5;
                     vy = (Math.random() - 0.5) * 2;
                     break;
             }
 
-            game.bullets.push({
-                x, y,
-                width: 12,
-                height: 12,
-                vx, vy,
-                color: '#00ff00'
-            });
-        }, i * 150);
+            game.bullets.push({ x, y, width: 10, height: 10, vx, vy, color: '#00ff00' });
+        }, i * 180);
     }
 }
 
 function createWaveBullets() {
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 10; i++) {
         setTimeout(() => {
             game.bullets.push({
                 x: -10,
                 y: 70,
-                width: 15,
-                height: 15,
-                vx: 3,
+                width: 12,
+                height: 12,
+                vx: 2.5,
                 vy: 0,
                 wave: true,
-                waveOffset: i * 0.5,
+                waveOffset: i * 0.8,
                 color: '#00ffff'
             });
-        }, i * 300);
+        }, i * 350);
     }
 }
 
 function createSpiralBullets() {
-    const centerX = 285;
-    const centerY = 70;
     let angle = 0;
-
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 24; i++) {
         setTimeout(() => {
-            const radius = 10 + i * 3;
             game.bullets.push({
-                x: centerX,
-                y: centerY,
-                width: 10,
-                height: 10,
-                vx: Math.cos(angle) * 2,
-                vy: Math.sin(angle) * 2,
+                x: 287,
+                y: 70,
+                width: 8,
+                height: 8,
+                vx: Math.cos(angle) * 1.8,
+                vy: Math.sin(angle) * 1.8,
                 color: '#ffff00'
             });
-            angle += 0.5;
-        }, i * 100);
+            angle += 0.6;
+        }, i * 140);
     }
 }
 
 // ===== ダイアログシステム =====
+let dialogInterval = null;
+
 function showDialog(text, callback) {
     game.state = GameState.DIALOG;
-    elements.dialogBox.style.display = 'block';
-    elements.battleBox.style.display = 'none';
-    elements.dialogText.textContent = '';
+    game.dialogCallback = callback;
+    game.dialogTyping = true;
+    game.dialogSkippable = false;
+
+    document.getElementById('dialog-box').style.display = 'block';
+    document.getElementById('battle-box').style.display = 'none';
+    document.getElementById('dialog-text').textContent = '';
+
+    // \\nを改行に変換
+    text = text.replace(/\\n/g, '\n');
 
     let index = 0;
-    const typewriterInterval = setInterval(() => {
+    if (dialogInterval) clearInterval(dialogInterval);
+
+    dialogInterval = setInterval(() => {
         if (index < text.length) {
-            elements.dialogText.textContent += text[index];
+            const currentText = document.getElementById('dialog-text').textContent;
+            document.getElementById('dialog-text').textContent = currentText + text[index];
             index++;
         } else {
-            clearInterval(typewriterInterval);
+            clearInterval(dialogInterval);
+            game.dialogTyping = false;
+            game.dialogSkippable = true;
             setTimeout(() => {
-                elements.dialogBox.style.display = 'none';
-                if (callback) callback();
+                if (game.dialogSkippable) {
+                    skipDialog();
+                }
             }, 1500);
         }
-    }, 30);
+    }, 25); // より速いタイピング
+}
+
+function skipDialog() {
+    if (dialogInterval) clearInterval(dialogInterval);
+    document.getElementById('dialog-box').style.display = 'none';
+    game.dialogSkippable = false;
+    if (game.dialogCallback) {
+        game.dialogCallback();
+        game.dialogCallback = null;
+    }
 }
 
 // ===== ゲームループ =====
 function gameLoop() {
-    // 攻撃スライダーの更新
     if (game.state === GameState.ATTACK) {
         updateAttackSlider();
     }
 
-    // 回避フェーズの更新
     if (game.state === GameState.DODGE) {
         updateDodgePhase();
     }
@@ -602,87 +664,81 @@ function gameLoop() {
 }
 
 function updateDodgePhase() {
-    // プレイヤーの移動
-    if (game.keys['ArrowLeft'] || game.keys['a']) {
-        game.player.x = Math.max(10, game.player.x - game.player.speed);
+    // プレイヤーの移動（Shift で減速）
+    const speed = game.keys['Shift'] ? game.player.speed * 0.5 : game.player.speed;
+
+    if (game.keys['ArrowLeft'] || game.keys['a'] || game.keys['A']) {
+        game.player.x = Math.max(10, game.player.x - speed);
     }
-    if (game.keys['ArrowRight'] || game.keys['d']) {
-        game.player.x = Math.min(560, game.player.x + game.player.speed);
+    if (game.keys['ArrowRight'] || game.keys['d'] || game.keys['D']) {
+        game.player.x = Math.min(565, game.player.x + speed);
     }
-    if (game.keys['ArrowUp'] || game.keys['w']) {
-        game.player.y = Math.max(10, game.player.y - game.player.speed);
+    if (game.keys['ArrowUp'] || game.keys['w'] || game.keys['W']) {
+        game.player.y = Math.max(10, game.player.y - speed);
     }
-    if (game.keys['ArrowDown'] || game.keys['s']) {
-        game.player.y = Math.min(130, game.player.y + game.player.speed);
+    if (game.keys['ArrowDown'] || game.keys['s'] || game.keys['S']) {
+        game.player.y = Math.min(130, game.player.y + speed);
     }
 
     updateHeartPosition();
 
     // 弾の更新
-    ctx.clearRect(0, 0, elements.canvas.width, elements.canvas.height);
+    ctx.clearRect(0, 0, 575, 140);
 
     for (let i = game.bullets.length - 1; i >= 0; i--) {
         const bullet = game.bullets[i];
 
-        // 波動弾の特殊な動き
         if (bullet.wave) {
-            bullet.y = 70 + Math.sin(bullet.x * 0.05 + bullet.waveOffset) * 30;
+            bullet.y = 70 + Math.sin(bullet.x * 0.05 + bullet.waveOffset) * 40;
         }
 
         bullet.x += bullet.vx;
         bullet.y += bullet.vy;
 
-        // 画面外の弾を削除
-        if (bullet.x < -50 || bullet.x > 620 || bullet.y < -50 || bullet.y > 190) {
+        if (bullet.x < -50 || bullet.x > 625 || bullet.y < -50 || bullet.y > 190) {
             game.bullets.splice(i, 1);
             continue;
         }
 
-        // 弾を描画
         ctx.fillStyle = bullet.color;
         ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
 
-        // 当たり判定（無敵時間でなければ）
         if (!game.player.invulnerable && checkCollision(bullet)) {
             takeDamage(game.boss.attackPower);
         }
     }
 
-    // 無敵時間の更新
     if (game.player.invulnerable) {
         game.player.invulnerableTime--;
         if (game.player.invulnerableTime <= 0) {
             game.player.invulnerable = false;
-            elements.playerHeart.style.opacity = '1';
+            document.getElementById('player-heart').style.opacity = '1';
         } else {
-            // 点滅エフェクト
-            elements.playerHeart.style.opacity = game.player.invulnerableTime % 10 < 5 ? '0.3' : '1';
+            document.getElementById('player-heart').style.opacity = game.player.invulnerableTime % 8 < 4 ? '0.3' : '1';
         }
     }
 }
 
 function checkCollision(bullet) {
-    const heartSize = 16;
+    const heartSize = 18;
     return (
-        game.player.x < bullet.x + bullet.width &&
-        game.player.x + heartSize > bullet.x &&
-        game.player.y < bullet.y + bullet.height &&
-        game.player.y + heartSize > bullet.y
+        game.player.x - heartSize/2 < bullet.x + bullet.width &&
+        game.player.x + heartSize/2 > bullet.x &&
+        game.player.y - heartSize/2 < bullet.y + bullet.height &&
+        game.player.y + heartSize/2 > bullet.y
     );
 }
 
 function takeDamage(damage) {
     game.player.hp = Math.max(0, game.player.hp - damage);
     game.player.invulnerable = true;
-    game.player.invulnerableTime = 30; // 約0.5秒
+    game.player.invulnerableTime = 40;
 
     updatePlayerHp();
 
-    // ダメージエフェクト
-    elements.playerHeart.classList.add('damage-flash');
-    setTimeout(() => elements.playerHeart.classList.remove('damage-flash'), 200);
+    document.getElementById('player-heart').classList.add('damage-flash');
+    setTimeout(() => document.getElementById('player-heart').classList.remove('damage-flash'), 300);
 
-    // ゲームオーバーチェック
     if (game.player.hp <= 0) {
         showGameOver();
     }
@@ -690,49 +746,47 @@ function takeDamage(damage) {
 
 // ===== UI更新 =====
 function updateHeartPosition() {
-    elements.playerHeart.style.left = game.player.x + 'px';
-    elements.playerHeart.style.top = game.player.y + 'px';
+    document.getElementById('player-heart').style.left = game.player.x + 'px';
+    document.getElementById('player-heart').style.top = game.player.y + 'px';
 }
 
 function updatePlayerHp() {
     const percentage = (game.player.hp / game.player.maxHp) * 100;
-    elements.playerHpFill.style.width = percentage + '%';
-    elements.playerHpText.textContent = `${game.player.hp} / ${game.player.maxHp}`;
+    document.getElementById('player-hp-fill').style.width = percentage + '%';
+    document.getElementById('player-hp-text').textContent = `${game.player.hp} / ${game.player.maxHp}`;
 
-    // HPが低いと赤くなる
     if (percentage < 30) {
-        elements.playerHpFill.style.background = '#ff0000';
+        document.getElementById('player-hp-fill').style.background = '#ff0000';
     } else {
-        elements.playerHpFill.style.background = '#ffff00';
+        document.getElementById('player-hp-fill').style.background = '#ffff00';
     }
 }
 
 function updateBossHp() {
     const percentage = (game.boss.hp / game.boss.maxHp) * 100;
-    elements.bossHpFill.style.width = percentage + '%';
-    elements.bossHp.textContent = game.boss.hp;
+    document.getElementById('boss-hp-fill').style.width = percentage + '%';
+    document.getElementById('boss-hp').textContent = game.boss.hp;
 }
 
 // ===== ユーティリティ =====
 function hideAllMenus() {
-    elements.subMenu.classList.add('hidden');
-    elements.itemMenu.classList.add('hidden');
-    elements.mercyMenu.classList.add('hidden');
-    elements.attackBarContainer.classList.add('hidden');
+    document.getElementById('sub-menu').classList.add('hidden');
+    document.getElementById('item-menu').classList.add('hidden');
+    document.getElementById('mercy-menu').classList.add('hidden');
+    document.getElementById('attack-bar-container').classList.add('hidden');
 }
 
 function showGameOver() {
     game.state = GameState.GAME_OVER;
-    elements.gameOver.classList.remove('hidden');
+    document.getElementById('game-over').classList.remove('hidden');
 }
 
 function showVictory() {
     game.state = GameState.VICTORY;
-    elements.victory.classList.remove('hidden');
+    document.getElementById('victory').classList.remove('hidden');
 }
 
 function resetGame() {
-    // ゲーム状態をリセット
     game.player.hp = game.player.maxHp;
     game.boss.hp = game.boss.maxHp;
     game.boss.turnCount = 0;
@@ -741,26 +795,21 @@ function resetGame() {
     game.boss.attackPower = 5;
     game.boss.defense = 5;
     game.bullets = [];
+    game.currentMenuIndex = 0;
 
-    // アイテムとACTをリセット
-    Object.keys(game.items).forEach(key => {
-        game.items[key].used = false;
-    });
-    Object.keys(game.acts).forEach(key => {
-        game.acts[key].used = false;
-    });
+    Object.keys(game.items).forEach(key => game.items[key].used = false);
+    Object.keys(game.acts).forEach(key => game.acts[key].used = false);
 
-    // UI更新
     updatePlayerHp();
     updateBossHp();
     updateItemMenu();
 
-    elements.gameOver.classList.add('hidden');
-    elements.victory.classList.add('hidden');
+    document.getElementById('game-over').classList.add('hidden');
+    document.getElementById('victory').classList.add('hidden');
 
-    // ゲーム再開
     showDialog("* The evil boss blocks your way!", () => {
         game.state = GameState.MENU;
+        updateMenuSelection();
     });
 }
 
