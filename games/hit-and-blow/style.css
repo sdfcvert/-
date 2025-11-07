@@ -8,7 +8,7 @@
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+    background: linear-gradient(135deg, #dfe6ed 0%, #c8d5e0 50%, #dfe6ed 100%);
     min-height: 100vh;
     display: flex;
     justify-content: center;
@@ -69,13 +69,15 @@ body {
     background: white;
     border-radius: 20px;
     padding: 30px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     transition: all 0.3s ease;
 }
 
 .player-section:hover, .ai-section:hover {
-    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 15px 50px rgba(102, 126, 234, 0.15), 0 4px 12px rgba(0, 0, 0, 0.08);
     transform: translateY(-2px);
+    border-color: rgba(102, 126, 234, 0.2);
 }
 
 /* セクションヘッダー */
@@ -136,18 +138,34 @@ body {
     font-size: 42px;
     font-weight: 600;
     background: linear-gradient(135deg, #ffffff 0%, #f7fafc 100%);
-    border: 2px solid #e2e8f0;
+    border: 3px solid #e2e8f0;
     border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
     transition: all 0.3s ease;
     color: #2d3748;
+}
+
+.digit.inputting {
+    border-color: #667eea;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4), 0 0 0 3px rgba(102, 126, 234, 0.2);
+    animation: inputPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes inputPulse {
+    0%, 100% {
+        border-color: #667eea;
+    }
+    50% {
+        border-color: #764ba2;
+    }
 }
 
 .digit:not(:empty) {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border-color: #667eea;
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.35);
+    transform: scale(1.05);
 }
 
 .ai .digit {
@@ -337,7 +355,8 @@ body {
     padding: 20px;
     background: white;
     border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     margin-bottom: 30px;
 }
 
@@ -449,7 +468,8 @@ body {
     background: white;
     border-radius: 20px;
     padding: 30px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .rules-title {

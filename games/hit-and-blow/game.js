@@ -62,6 +62,8 @@ function init() {
     });
 
     updateTurnIndicator();
+    updatePlayerDisplay(); // 初期表示で最初のdigitをハイライト
+    elements.statusMessage.textContent = 'Enter your 4-digit number! (0/4)';
 }
 
 // ===== ランダムな4桁の数字を生成 =====
@@ -86,6 +88,13 @@ function handleNumberInput(num) {
 
         if (game.currentInput.length === 4) {
             elements.submitBtn.disabled = false;
+            elements.statusMessage.textContent = '✓ Ready! Press Submit or Enter';
+            elements.statusMessage.style.color = '#48bb78';
+            elements.statusMessage.style.fontWeight = '600';
+        } else {
+            elements.statusMessage.textContent = `Enter your 4-digit number! (${game.currentInput.length}/4)`;
+            elements.statusMessage.style.color = '#4a5568';
+            elements.statusMessage.style.fontWeight = '500';
         }
     }
 }
@@ -94,12 +103,30 @@ function clearInput() {
     game.currentInput = '';
     updatePlayerDisplay();
     elements.submitBtn.disabled = true;
+
+    if (game.playerTurn && !game.gameOver) {
+        elements.statusMessage.textContent = 'Enter your 4-digit number! (0/4)';
+        elements.statusMessage.style.color = '#4a5568';
+        elements.statusMessage.style.fontWeight = '500';
+    }
 }
 
 function updatePlayerDisplay() {
     const digits = elements.playerInput.querySelectorAll('.digit');
     digits.forEach((digit, index) => {
-        digit.textContent = game.currentInput[index] || '-';
+        if (index < game.currentInput.length) {
+            // 入力済み
+            digit.textContent = game.currentInput[index];
+            digit.classList.remove('inputting');
+        } else if (index === game.currentInput.length) {
+            // 次に入力する位置
+            digit.textContent = '-';
+            digit.classList.add('inputting');
+        } else {
+            // 未入力
+            digit.textContent = '-';
+            digit.classList.remove('inputting');
+        }
     });
 }
 
@@ -126,7 +153,7 @@ function submitGuess() {
     // AIのターン
     setTimeout(() => {
         aiTurn();
-    }, 1500);
+    }, 800);
 }
 
 // ===== 推測をチェック =====
@@ -189,7 +216,9 @@ function aiTurn() {
             game.playerTurn = true;
             game.aiThinking = false;
             updateTurnIndicator();
-            elements.statusMessage.textContent = 'Enter your 4-digit number!';
+            elements.statusMessage.textContent = 'Enter your 4-digit number! (0/4)';
+            elements.statusMessage.style.color = '#4a5568';
+            elements.statusMessage.style.fontWeight = '500';
 
             // AIの推測をリセット
             setTimeout(() => {
@@ -198,8 +227,8 @@ function aiTurn() {
                     digit.textContent = '?';
                 });
             }, 1000);
-        }, 1500);
-    }, 2000);
+        }, 800);
+    }, 1000);
 }
 
 // ===== AIの推測生成（人間らしいロジック） =====
@@ -333,10 +362,13 @@ function resetGame() {
     elements.playerHistory.innerHTML = '';
     elements.aiHistory.innerHTML = '';
     elements.resultOverlay.classList.add('hidden');
-    elements.statusMessage.textContent = 'Enter your 4-digit number!';
+    elements.statusMessage.textContent = 'Enter your 4-digit number! (0/4)';
+    elements.statusMessage.style.color = '#4a5568';
+    elements.statusMessage.style.fontWeight = '500';
 
     clearInput();
     updateTurnIndicator();
+    updatePlayerDisplay(); // 初期表示で最初のdigitをハイライト
 
     // AIの表示をリセット
     const aiDigits = elements.aiGuess.querySelectorAll('.digit');
