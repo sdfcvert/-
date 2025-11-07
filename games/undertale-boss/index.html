@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boss Battle - Undertale Style</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- ボスのスプライトエリア -->
+        <div id="boss-area">
+            <div id="boss-sprite">👿</div>
+            <div id="boss-name">EVIL BOSS</div>
+            <div id="boss-hp-container">
+                <div id="boss-hp-bar">
+                    <div id="boss-hp-fill"></div>
+                </div>
+                <div id="boss-hp-text">HP: <span id="boss-hp">500</span> / 500</div>
+            </div>
+        </div>
+
+        <!-- プレイヤーステータス -->
+        <div id="player-status">
+            <div id="player-name">FRISK</div>
+            <div id="player-lv">LV 1</div>
+            <div id="player-hp-container">
+                <span class="hp-label">HP</span>
+                <div id="player-hp-bar">
+                    <div id="player-hp-fill"></div>
+                </div>
+                <span id="player-hp-text">20 / 20</span>
+            </div>
+        </div>
+
+        <!-- バトルボックス（弾幕回避エリア） -->
+        <div id="battle-box">
+            <canvas id="battle-canvas" width="570" height="140"></canvas>
+            <div id="player-heart">❤</div>
+        </div>
+
+        <!-- ダイアログボックス -->
+        <div id="dialog-box">
+            <div id="dialog-text"></div>
+        </div>
+
+        <!-- メニュー -->
+        <div id="menu">
+            <button class="menu-btn" data-action="fight">
+                <span class="menu-icon">⚔️</span>
+                <span class="menu-text">FIGHT</span>
+            </button>
+            <button class="menu-btn" data-action="act">
+                <span class="menu-icon">💬</span>
+                <span class="menu-text">ACT</span>
+            </button>
+            <button class="menu-btn" data-action="item">
+                <span class="menu-icon">🎒</span>
+                <span class="menu-text">ITEM</span>
+            </button>
+            <button class="menu-btn" data-action="mercy">
+                <span class="menu-icon">💛</span>
+                <span class="menu-text">MERCY</span>
+            </button>
+        </div>
+
+        <!-- サブメニュー（ACT用） -->
+        <div id="sub-menu" class="hidden">
+            <button class="sub-menu-btn" data-act="check">* Check</button>
+            <button class="sub-menu-btn" data-act="talk">* Talk</button>
+            <button class="sub-menu-btn" data-act="encourage">* Encourage</button>
+            <button class="sub-menu-btn" data-act="threaten">* Threaten</button>
+        </div>
+
+        <!-- アイテムメニュー -->
+        <div id="item-menu" class="hidden">
+            <button class="item-btn" data-item="pie" data-heal="99">* Butterscotch Pie (Heal 99)</button>
+            <button class="item-btn" data-item="steak" data-heal="30">* Glamburger (Heal 30)</button>
+            <button class="item-btn" data-item="candy" data-heal="10">* Monster Candy (Heal 10)</button>
+            <button class="item-btn" data-item="water" data-heal="5">* Water Sausage (Heal 5)</button>
+        </div>
+
+        <!-- MERCYメニュー -->
+        <div id="mercy-menu" class="hidden">
+            <button class="mercy-btn" data-mercy="spare">* Spare</button>
+            <button class="mercy-btn" data-mercy="flee">* Flee</button>
+        </div>
+
+        <!-- 攻撃バー -->
+        <div id="attack-bar-container" class="hidden">
+            <div id="attack-bar">
+                <div id="attack-target"></div>
+                <div id="attack-slider"></div>
+            </div>
+        </div>
+
+        <!-- ゲームオーバー画面 -->
+        <div id="game-over" class="hidden">
+            <div id="game-over-text">YOU DIED</div>
+            <button id="continue-btn">Continue</button>
+        </div>
+
+        <!-- 勝利画面 -->
+        <div id="victory" class="hidden">
+            <div id="victory-text">YOU WON!</div>
+            <div id="victory-subtext">* You defeated the boss!</div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

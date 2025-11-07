@@ -25,6 +25,22 @@ const GAMES = [
         url: "games/tetris-ai/index.html",
         status: "available"
     },
+    {
+        id: "undertale-boss-battle",
+        name: "Boss Battle",
+        description: "Undertale風のボス戦。FIGHT、ACT、ITEM、MERCYを駆使してボスを倒そう！矢印キーで回避、スペースキーで攻撃。",
+        icon: "❤️",
+        url: "games/undertale-boss/index.html",
+        status: "available"
+    },
+    {
+        id: "hit-and-blow",
+        name: "Hit & Blow",
+        description: "AIと対戦する数字推理ゲーム。4桁の数字を推測し、先に当てた方が勝ち！人間らしいAIが相手です。",
+        icon: "🎯",
+        url: "games/hit-and-blow/index.html",
+        status: "available"
+    },
 
     // ===== ここに新しいゲームを追加 =====
     // {
@@ -36,6 +52,10 @@ const GAMES = [
     //     status: "available"
     // },
 ];
+
+// デバッグ用ログ
+console.log('games-config.js loaded');
+console.log('GAMES array defined with', GAMES.length, 'games');
 
 /**
  * ステータスのラベル定義

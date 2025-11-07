@@ -105,7 +105,18 @@ class TetrisGame {
 
     initNextPiece() {
         const pieces = Object.keys(TETROMINOS);
-        const randomPiece = pieces[Math.floor(Math.random() * pieces.length)];
+        let randomPiece;
+
+        // Iミノの出現率を微増（通常14.3%→約20%）
+        const rand = Math.random();
+        if (rand < 0.2) {
+            randomPiece = 'I';
+        } else {
+            // I以外から選択
+            const otherPieces = pieces.filter(p => p !== 'I');
+            randomPiece = otherPieces[Math.floor(Math.random() * otherPieces.length)];
+        }
+
         this.nextPiece = {
             type: randomPiece,
             shape: JSON.parse(JSON.stringify(TETROMINOS[randomPiece].shape)),
@@ -553,8 +564,34 @@ class TetrisGame {
             }
         }
 
+        // テトリス用の穴（右端1列を空ける戦略）をチェック
+        let hasWellStructure = false;
+        let wellBonus = 0;
+
+        // 右端の列が空いているかチェック
+        const rightColEmpty = heights[COLS - 1] < Math.min(...heights.slice(0, COLS - 1)) - 2;
+
+        // 左端の列が空いているかチェック
+        const leftColEmpty = heights[0] < Math.min(...heights.slice(1)) - 2;
+
+        if (rightColEmpty || leftColEmpty) {
+            hasWellStructure = true;
+            wellBonus = 200; // 戦略的な穴に対するボーナス
+
+            // 深い穴であればさらにボーナス
+            const wellDepth = rightColEmpty ?
+                Math.min(...heights.slice(0, COLS - 1)) - heights[COLS - 1] :
+                Math.min(...heights.slice(1)) - heights[0];
+
+            if (wellDepth >= 4) {
+                wellBonus += 150;
+            }
+        }
+
         // スコア計算（重みは調整可能）
-        score = completeLines * 150 - holes * 60 - bumpiness * 12 - aggregateHeight * 6;
+        // 戦略的な穴を除いて通常の穴にペナルティ
+        const holePenalty = hasWellStructure ? holes * 40 : holes * 60;
+        score = completeLines * 150 - holePenalty - bumpiness * 12 - aggregateHeight * 6 + wellBonus;
 
         // テトリス（4ライン消し）ボーナス
         if (linesCleared === 4) {
@@ -577,13 +614,16 @@ class TetrisGame {
 
 // ===== AIクラス =====
 class TetrisAI {
-    constructor(game) {
+    constructor(game, playerGame) {
         this.game = game;
-        this.thinkDelay = 1200; // 人間らしい思考時間
+        this.playerGame = playerGame; // プレイヤーのゲーム状態を参照
+        this.baseThinkDelay = 1200; // 基本思考時間
+        this.thinkDelay = this.baseThinkDelay;
         this.lastThink = 0;
         this.isExecuting = false;
         this.moveQueue = [];
-        this.moveDelay = 80; // 移動アニメーションの間隔
+        this.baseMoveDelay = 80; // 基本移動間隔
+        this.moveDelay = this.baseMoveDelay;
         this.lastMoveTime = 0;
     }
 
@@ -748,8 +788,47 @@ class TetrisAI {
         }
     }
 
+    // プレイヤーに合わせてペースを調整
+    adjustPaceToPlayer() {
+        if (!this.playerGame) return;
+
+        // プレイヤーとAIのスコア差とレベル差を計算
+        const scoreDiff = this.game.score - this.playerGame.score;
+        const levelDiff = this.game.level - this.playerGame.level;
+        const lineDiff = this.game.lines - this.playerGame.lines;
+
+        // AIが大きくリードしている場合は遅くする
+        if (scoreDiff > 2000 || levelDiff > 2 || lineDiff > 10) {
+            this.thinkDelay = this.baseThinkDelay * 1.8;
+            this.moveDelay = this.baseMoveDelay * 1.6;
+        }
+        // AIが少しリードしている場合は少し遅くする
+        else if (scoreDiff > 1000 || levelDiff > 1 || lineDiff > 5) {
+            this.thinkDelay = this.baseThinkDelay * 1.4;
+            this.moveDelay = this.baseMoveDelay * 1.3;
+        }
+        // プレイヤーがリードしている場合は速くする
+        else if (scoreDiff < -1000 || levelDiff < -1 || lineDiff < -5) {
+            this.thinkDelay = this.baseThinkDelay * 0.7;
+            this.moveDelay = this.baseMoveDelay * 0.8;
+        }
+        // プレイヤーが大きくリードしている場合はさらに速くする
+        else if (scoreDiff < -2000 || levelDiff < -2 || lineDiff < -10) {
+            this.thinkDelay = this.baseThinkDelay * 0.5;
+            this.moveDelay = this.baseMoveDelay * 0.6;
+        }
+        // 拮抗している場合は通常ペース
+        else {
+            this.thinkDelay = this.baseThinkDelay;
+            this.moveDelay = this.baseMoveDelay;
+        }
+    }
+
     update(deltaTime) {
         if (this.game.gameOver) return;
+
+        // プレイヤーに合わせてペースを調整
+        this.adjustPaceToPlayer();
 
         // 移動中の場合はキューを処理
         if (this.isExecuting) {
@@ -826,7 +905,7 @@ function initGame() {
 
     playerGame = new TetrisGame(playerCanvas, playerNextCanvas, false);
     aiGame = new TetrisGame(aiCanvas, aiNextCanvas, true);
-    aiController = new TetrisAI(aiGame);
+    aiController = new TetrisAI(aiGame, playerGame); // playerGameを参照させる
 
     gameState.isPlaying = true;
     gameState.isPaused = false;
