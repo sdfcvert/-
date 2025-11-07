@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hit & Blow - AI Battle</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="game-header">
+            <h1 class="game-title">Hit & Blow</h1>
+            <p class="game-subtitle">4桁の数字を当てるゲーム</p>
+        </header>
+
+        <div class="game-content">
+            <!-- プレイヤー側 -->
+            <div class="player-section">
+                <div class="section-header">
+                    <h2 class="section-title">👤 You</h2>
+                    <div class="turn-indicator" id="player-turn">Your Turn</div>
+                </div>
+
+                <div class="input-area">
+                    <div class="number-display" id="player-input">
+                        <span class="digit">-</span>
+                        <span class="digit">-</span>
+                        <span class="digit">-</span>
+                        <span class="digit">-</span>
+                    </div>
+
+                    <div class="number-pad">
+                        <button class="num-btn" data-num="1">1</button>
+                        <button class="num-btn" data-num="2">2</button>
+                        <button class="num-btn" data-num="3">3</button>
+                        <button class="num-btn" data-num="4">4</button>
+                        <button class="num-btn" data-num="5">5</button>
+                        <button class="num-btn" data-num="6">6</button>
+                        <button class="num-btn" data-num="7">7</button>
+                        <button class="num-btn" data-num="8">8</button>
+                        <button class="num-btn" data-num="9">9</button>
+                        <button class="num-btn clear" id="clear-btn">Clear</button>
+                        <button class="num-btn" data-num="0">0</button>
+                        <button class="num-btn submit" id="submit-btn">Submit</button>
+                    </div>
+                </div>
+
+                <div class="history-container">
+                    <h3 class="history-title">Your Guesses</h3>
+                    <div class="history-list" id="player-history"></div>
+                </div>
+            </div>
+
+            <!-- AI側 -->
+            <div class="ai-section">
+                <div class="section-header">
+                    <h2 class="section-title">🤖 AI Opponent</h2>
+                    <div class="turn-indicator" id="ai-turn">AI Thinking...</div>
+                </div>
+
+                <div class="ai-display">
+                    <div class="ai-thought" id="ai-thought">
+                        <div class="thought-bubble">💭</div>
+                        <p id="ai-message">Let me think...</p>
+                    </div>
+
+                    <div class="number-display ai" id="ai-guess">
+                        <span class="digit">?</span>
+                        <span class="digit">?</span>
+                        <span class="digit">?</span>
+                        <span class="digit">?</span>
+                    </div>
+                </div>
+
+                <div class="history-container">
+                    <h3 class="history-title">AI Guesses</h3>
+                    <div class="history-list" id="ai-history"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ゲーム状態 -->
+        <div class="game-status" id="game-status">
+            <p id="status-message">Enter your 4-digit number!</p>
+        </div>
+
+        <!-- ゲーム結果 -->
+        <div class="result-overlay hidden" id="result-overlay">
+            <div class="result-card">
+                <h2 class="result-title" id="result-title">You Win!</h2>
+                <p class="result-message" id="result-message"></p>
+                <div class="result-stats">
+                    <div class="stat">
+                        <span class="stat-label">Your Guesses:</span>
+                        <span class="stat-value" id="player-guesses">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">AI Guesses:</span>
+                        <span class="stat-value" id="ai-guesses">0</span>
+                    </div>
+                </div>
+                <button class="play-again-btn" id="play-again-btn">Play Again</button>
+            </div>
+        </div>
+
+        <!-- ルール説明 -->
+        <div class="rules-section">
+            <h3 class="rules-title">How to Play</h3>
+            <ul class="rules-list">
+                <li><strong>Hit:</strong> 正しい数字が正しい位置にある</li>
+                <li><strong>Blow:</strong> 正しい数字が違う位置にある</li>
+                <li>4桁の重複しない数字を推測してください</li>
+                <li>AIと同時に推測し、先に当てた方が勝ち！</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

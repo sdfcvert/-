@@ -7,45 +7,77 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="home-page">
-    <div class="container">
+    <div class="hero-container">
+        <div class="hero-background">
+            <div class="gradient-orb orb-1"></div>
+            <div class="gradient-orb orb-2"></div>
+            <div class="gradient-orb orb-3"></div>
+        </div>
+
         <header class="main-header">
-            <h1 class="platform-title">Game Platform</h1>
+            <div class="logo-section">
+                <div class="logo-icon">🎮</div>
+                <h1 class="platform-title">Game Platform</h1>
+            </div>
             <p class="platform-subtitle">ブラウザで楽しむゲームの世界</p>
         </header>
 
         <main class="home-content">
-            <section class="welcome-section">
-                <div class="welcome-card">
-                    <h2>ようこそ</h2>
-                    <p class="description">
-                        このプラットフォームでは、様々なブラウザゲームをお楽しみいただけます。
-                    </p>
-                    <p class="description">
-                        シンプルな操作で、すぐにゲームを始められます。
-                    </p>
-                    <div class="features">
-                        <div class="feature-item">
-                            <span class="feature-icon">🎮</span>
-                            <span class="feature-text">多彩なゲーム</span>
+            <section class="hero-section">
+                <h2 class="hero-title">
+                    さあ、<span class="highlight">冒険</span>を始めよう
+                </h2>
+                <p class="hero-description">
+                    様々なジャンルのゲームを、いつでもどこでも。<br>
+                    シンプルな操作で、すぐにプレイ開始。
+                </p>
+
+                <div class="cta-buttons">
+                    <button class="cta-button primary" onclick="location.href='games.html'">
+                        <span class="button-text">ゲームを探す</span>
+                        <span class="button-icon">→</span>
+                    </button>
+                </div>
+            </section>
+
+            <section class="features-section">
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon-wrapper">
+                            <span class="feature-icon">🎯</span>
                         </div>
-                        <div class="feature-item">
+                        <h3 class="feature-title">多彩なジャンル</h3>
+                        <p class="feature-description">
+                            パズル、アクション、戦略など<br>幅広いゲームを用意
+                        </p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon-wrapper">
                             <span class="feature-icon">⚡</span>
-                            <span class="feature-text">快適な動作</span>
                         </div>
-                        <div class="feature-item">
-                            <span class="feature-icon">🌟</span>
-                            <span class="feature-text">定期的な追加</span>
+                        <h3 class="feature-title">快適な動作</h3>
+                        <p class="feature-description">
+                            最適化されたパフォーマンスで<br>スムーズなゲーム体験
+                        </p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon-wrapper">
+                            <span class="feature-icon">🚀</span>
                         </div>
+                        <h3 class="feature-title">定期的な追加</h3>
+                        <p class="feature-description">
+                            新しいゲームを随時追加<br>飽きることのないラインナップ
+                        </p>
                     </div>
                 </div>
             </section>
         </main>
 
-        <div class="start-button-container">
-            <button class="start-button" onclick="location.href='games.html'">
-                スタート
-            </button>
-        </div>
+        <footer class="home-footer">
+            <p class="footer-text">Game Platform © 2025</p>
+        </footer>
     </div>
 </body>
 </html>

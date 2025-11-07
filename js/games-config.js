@@ -33,6 +33,14 @@ const GAMES = [
         url: "games/undertale-boss/index.html",
         status: "available"
     },
+    {
+        id: "hit-and-blow",
+        name: "Hit & Blow",
+        description: "AIと対戦する数字推理ゲーム。4桁の数字を推測し、先に当てた方が勝ち！人間らしいAIが相手です。",
+        icon: "🎯",
+        url: "games/hit-and-blow/index.html",
+        status: "available"
+    },
 
     // ===== ここに新しいゲームを追加 =====
     // {
